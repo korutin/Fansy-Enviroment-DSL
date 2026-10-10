@@ -1,0 +1,42 @@
+# Пример тестового окружения: эмитент, физлицо (с исторической правкой),
+# финансовый инструмент, лицевой счёт владельца, банк и банковский счёт.
+#
+# Примечание: блок `bank` использует заглушку API_INS_BANK/API_FIND_BANK
+# (см. sql/api_stubs_test_env.sql) — до её реализации этот блок и
+# зависящий от банка bank_account реального результата не дадут.
+# Через --dry-run сценарий всё равно можно проверить целиком (структура,
+# алиасы, порядок), задав ответы через FakeDatabase.
+
+face &gazprom: juridical
+  NAME=ПАО Газпром
+  INN=7736050003
+
+face &ivanov: individual
+  NAME=Иванов Иван Иванович
+  INN=770123456789
+
+# Историческая правка лица — смена документа с 2020-06-01
+face &ivanov: individual
+  as_of=2020-06-01
+  NAME=Иванов Иван Иванович
+  DOC_SER=45 05
+  DOC_NUM=123456
+
+share &gazp: stock
+  SYSNAME=GAZP
+  ISSUER=&gazprom
+  ISIN=RU0007661625
+
+client &ivanov_owner: owner
+  NUMBER=Т0001
+  FACE=&ivanov
+  ISSUER=&gazprom
+
+bank &sber
+  BIC=044525225
+  NAME=ПАО Сбербанк
+
+bank_account &ivanov_bank_acc
+  ACNT=40817810900000012345
+  BIC=044525225
+  FACE=&ivanov
