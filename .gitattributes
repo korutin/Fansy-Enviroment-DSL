@@ -1,0 +1,4 @@
+# Fansy-SCRIPT: функции (.fsc) и выгрузки модулей (.mes) всегда с CR LF в рабочей
+# папке, независимо от core.autocrlf и системы; в репозитории хранятся с LF.
+*.fsc text eol=crlf
+*.mes text eol=crlf
