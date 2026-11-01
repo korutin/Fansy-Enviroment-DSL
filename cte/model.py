@@ -32,6 +32,7 @@ CHILD_KINDS = {"code", "activity", "attorney", "affiliate"}
 ALLOWED_CHILDREN = {
     "face": {"code", "activity", "attorney"},
     "client": {"affiliate"},
+    "bank": {"activity"},
 }
 
 ALL_KINDS = TOP_LEVEL_KINDS | CHILD_KINDS

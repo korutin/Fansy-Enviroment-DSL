@@ -1,93 +1,106 @@
 /* ============================================================================
-   Р—РђР“Р›РЈРЁРљР РЅРѕРІС‹С… РїСЂРѕС†РµРґСѓСЂ API_* РґР»СЏ DSL РѕРїРёСЃР°РЅРёСЏ С‚РµСЃС‚РѕРІС‹С… РѕРєСЂСѓР¶РµРЅРёР№ Fansy.
+   Новые процедуры API_* для DSL описания тестовых окружений Fansy:
+   ЗАГЛУШКИ и уже РЕАЛИЗОВАННЫЕ. Статус каждой процедуры указан в комментарии
+   над ней.
 
-   РЎС‚Р°С‚СѓСЃ: РќР• Р Р•РђР›РР—РћР’РђРќРћ. РљР°Р¶РґР°СЏ РїСЂРѕС†РµРґСѓСЂР° РЅРёС‡РµРіРѕ РЅРµ РїРёС€РµС‚ РІ Р‘Р” Рё
-   РІРѕР·РІСЂР°С‰Р°РµС‚ NULL (РґР»СЏ FIND/INS) Р»РёР±Рѕ РЅРµ РґРµР»Р°РµС‚ РЅРёС‡РµРіРѕ (РґР»СЏ UPD).
-   Р’С‹Р·РѕРІ РёР· DSL-СЃС†РµРЅР°СЂРёСЏ РЅР° СЌС‚РѕРј СЌС‚Р°РїРµ РґР°СЃС‚ РїСѓСЃС‚РѕР№/РЅРµСЂР°Р±РѕС‡РёР№ СЂРµР·СѓР»СЊС‚Р°С‚,
-   Р° РЅРµ РѕС€РёР±РєСѓ вЂ” СЌС‚Рѕ РѕСЃРѕР·РЅР°РЅРЅРѕ РІСЂРµРјРµРЅРЅРѕРµ СЂРµС€РµРЅРёРµ, С‡С‚РѕР±С‹ РІС‹Р·РѕРІС‹ СѓР¶Рµ СЃРµР№С‡Р°СЃ
-   РєРѕРјРїРёР»РёСЂРѕРІР°Р»РёСЃСЊ Рё РѕР±РІРµСЃ РјРѕР¶РЅРѕ Р±С‹Р»Рѕ С‚РµСЃС‚РёСЂРѕРІР°С‚СЊ РїРѕ РѕСЃС‚Р°Р»СЊРЅРѕР№ С‡Р°СЃС‚Рё
-   РїР°Р№РїР»Р°Р№РЅР° (Р°Р»РёР°СЃС‹, РїР°СЂСЃРёРЅРі Р±Р»РѕРєРѕРІ, РїРѕСЂСЏРґРѕРє РІС‹Р·РѕРІРѕРІ).
+   РЕАЛИЗОВАНЫ (коллекции лица и лицевого счёта): API_SET_P_FACE,
+   API_FIND_A_FACE, API_INS_A_FACE, API_FIND_AFFIL, API_INS_AFFIL.
+   РЕАЛИЗОВАНЫ (банк): API_FIND_BANK, API_SET_BANK.
 
-   РћС„РѕСЂРјР»РµРЅРёРµ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ СЃС‚РёР»СЋ СЃСѓС‰РµСЃС‚РІСѓСЋС‰РёС… API_* РІ
-   Fansy-Foundation/dBase/proc.sql (CREATE OR ALTER PROCEDURE, СЂР°Р·Р±РѕСЂ
-   FIELDS С‡РµСЂРµР· f_Token/f_Chr(10), PR_LIST_VAL Рё С‚.Рї.) вЂ” РїСЂРё СЂРµР°Р»РёР·Р°С†РёРё
-   РѕСЂРёРµРЅС‚РёСЂРѕРІР°С‚СЊСЃСЏ РЅР° Р°РЅР°Р»РѕРіРё:
-     API_FIND_CLIENT                   <- Р’ Р­РўРћРњ Р¤РђР™Р›Р• РќР•Рў: СЂР°Р±РѕС‡Р°СЏ РїСЂРѕС†РµРґСѓСЂР°
-                                          Р»РµР¶РёС‚ РѕС‚РґРµР»СЊРЅРѕ РІ
+   ЗАГЛУШКИ: API_UPD_CLIENT, API_UPD_A_FACE, API_UPD_AFFIL. Заглушка ничего
+   не пишет в БД и не делает ничего (UPD) либо возвращает NULL (FIND/INS).
+   Вызов из DSL-сценария на этом этапе даст пустой/нерабочий результат,
+   а не ошибку — это осознанно временное решение, чтобы вызовы уже сейчас
+   компилировались и обвес можно было тестировать по остальной части
+   пайплайна (алиасы, парсинг блоков, порядок вызовов).
+
+   Порядок процедур в файле значим: INS вызывает FIND, поэтому FIND описан
+   раньше. Не запускайте этот скрипт поверх стенда, где API_* с такими же
+   именами уже написаны вручную, — CREATE OR ALTER их заменит.
+
+   Оформление соответствует стилю существующих API_* в
+   Fansy-Foundation/dBase/proc.sql (CREATE OR ALTER PROCEDURE, разбор
+   FIELDS через f_Token/f_Chr(10), PR_LIST_VAL и т.п.) — при реализации
+   ориентироваться на аналоги:
+     API_FIND_CLIENT                   <- В ЭТОМ ФАЙЛЕ НЕТ: рабочая процедура
+                                          лежит отдельно в
                                           Fansy-Foundation/dBase/proc.sql
-     API_INS_CLIENT                    <- РќР• РЎРЈР©Р•РЎРўР’РЈР•Рў Рё Р·РґРµСЃСЊ РЅРµ СЃРѕР·РґР°С‘С‚СЃСЏ:
-                                          РІСЃС‚Р°РІРєСѓ РґРµР»Р°РµС‚ РѕР±РІРµСЃ РЅР°РїСЂСЏРјСѓСЋ С‡РµСЂРµР·
-                                          РїР»Р°С‚С„РѕСЂРјРµРЅРЅСѓСЋ OD_PR_INSERT_CLIENT
+     API_INS_CLIENT                    <- НЕ СУЩЕСТВУЕТ и здесь не создаётся:
+                                          вставку делает обвес напрямую через
+                                          платформенную OD_PR_INSERT_CLIENT
                                           (Fansy-Foundation/dBase/proc.sql);
-                                          С‡РµСЂРЅРѕРІРёРє РїСЂРѕС†РµРґСѓСЂС‹ вЂ” РІ
+                                          черновик процедуры — в
                                           sql/draft_api_ins_client.sql.
-     API_UPD_CLIENT                    <- РѕСЃС‚Р°С‘С‚СЃСЏ Р·Р°РіР»СѓС€РєРѕР№, Р°РЅР°Р»РѕРіРёС‡РЅРѕР№
-                                          "update"-РїСЂРѕС†РµРґСѓСЂС‹ РЅРµ РґР°РІР°Р»Рё
-     API_INS_BANK  / API_UPD_BANK     <- РїРѕ РѕР±СЂР°Р·С†Сѓ inline-РєРѕРґР° СЃРѕР·РґР°РЅРёСЏ Р±Р°РЅРєР°
-                                          РІ Fansy-Foundation/examples-code/
+     API_UPD_CLIENT                    <- остаётся заглушкой, аналогичной
+                                          "update"-процедуры не давали
+     API_FIND_BANK / API_SET_BANK     <- банк = лицо (платформенные API_FIND_FACE,
+                                          API_INS_FACE, API_UPD_FACE) плюс запись
+                                          OD_BANKS; образец ручного создания:
+                                          Fansy-Foundation/examples-code/
                                           metaM__F_REESTR_V04_59.mes
-                                          (OD_FACES -> OD_U_FACES -> OD_BANKS)
 
-   Р РµС€РµРЅРёСЏ РїРѕ РєРѕРЅС‚СЂР°РєС‚Сѓ, Р·Р°С„РёРєСЃРёСЂРѕРІР°РЅРЅС‹Рµ РІ РѕР±СЃСѓР¶РґРµРЅРёРё (Р°РєС‚СѓР°Р»СЊРЅС‹ РЅР° РјРѕРјРµРЅС‚
-   РЅР°РїРёСЃР°РЅРёСЏ Р·Р°РіР»СѓС€РµРє, РїСЂРё СЂРµР°Р»РёР·Р°С†РёРё СЃРІРµСЂСЏС‚СЊСЃСЏ СЃ РїРѕСЃР»РµРґРЅРёРј СЃРѕСЃС‚РѕСЏРЅРёРµРј
-   design-РґРѕРєСѓРјРµРЅС‚Р°):
-     - CLIENT Рё BANK вЂ” СЃСѓС‰РЅРѕСЃС‚Рё РџР›РћРЎРљРР• (Р±РµР· РёСЃС‚РѕСЂРёС‡РµСЃРєРёС… РІРµСЂСЃРёР№, Р±РµР·
-       as_of/NEW_B_DATE), РІ РѕС‚Р»РёС‡РёРµ РѕС‚ FACE/SHARE. UPD РїСЂР°РІРёС‚ Р·Р°РїРёСЃСЊ РЅР° РјРµСЃС‚Рµ
-       РїРѕ ID, РєР°Рє API_UPD_ACC.
-     - CLIENT: Р±РёР·РЅРµСЃ-РєР»СЋС‡ РїРѕРёСЃРєР° вЂ” (NUMBER, PLAN_ID, ISSUER), СЃРј. constraint
-       U_CLIENTS Рё rslv_client_t. PLAN_ID СЂРµР·РѕР»РІРёС‚СЃСЏ РїРѕ PLAN_SYS_NAME С‡РµСЂРµР·
-       OD_ACC_PLANS.SYS_NAME (РІ С‚РµРєСѓС‰РµРј РїСЂРёРєР»Р°РґРЅРѕРј РєРѕРґРµ вЂ” 'REESTR', Р¶С‘СЃС‚РєРѕ).
-       SUBTYPE РїРµСЂРµРґР°С‘С‚СЃСЏ РіРѕС‚РѕРІС‹Рј С‡РёСЃР»РѕРј. РЎРїСЂР°РІРѕС‡РЅРёРє Р·РЅР°С‡РµРЅРёР№ вЂ” OD_SYS_TABS
-       РіРґРµ CODE='REESTR_SUBTYPE', РєРѕР»РѕРЅРєР° NUM (1=РІР»Р°РґРµР»РµС†, 2=РЅРѕРјРёРЅР°Р»СЊРЅС‹Р№
-       РґРµСЂР¶Р°С‚РµР»СЊ, 3=РґРѕРІРµСЂ.СѓРїСЂР°РІР»СЏСЋС‰РёР№, 4=РґРѕРї.РёРЅРІРµСЃС‚РёС†РёРѕРЅРЅС‹Рµ РїР°Рё,
-       5=Р·Р°Р»РѕРіРѕРґРµСЂР¶Р°С‚РµР»СЊ, 6=РІС‹РґР°РІР°РµРјС‹Рµ РёРЅРІРµСЃС‚РёС†РёРѕРЅРЅС‹Рµ РїР°Рё, 7=СЃС‡С‘С‚ С„РѕРЅРґР°,
-       8=РЅРµСѓСЃС‚Р°РЅРѕРІР»РµРЅРЅС‹Рµ Р»РёС†Р°, 9=РґРµРїРѕР·РёС‚РЅС‹Р№ Р»РёС†.СЃС‡С‘С‚, 10=РєР°Р·РЅР°С‡РµР№СЃРєРёР№ СЃС‡С‘С‚
-       СЌРјРёС‚РµРЅС‚Р°, 102=РЅРѕРјРёРЅР°Р»СЊРЅС‹Р№ РґРµСЂР¶Р°С‚РµР»СЊ Р¦Р”). РњР°РїРїРёРЅРі РјРЅРµРјРѕРЅРёРєР°->NUM
-       С„РёРєСЃРёСЂСѓРµС‚СЃСЏ РІ РєРѕРЅС„РёРіРµ РѕР±РІРµСЃР°, РїСЂРёРІСЏР·РєР° РїРѕ NUM (СЃС‚Р°Р±РёР»РµРЅ),
-       РЅРµ РїРѕ NAME (С‚РµРєСЃС‚ РѕРїРёСЃР°РЅРёСЏ, РјРѕР¶РµС‚ РёР·РјРµРЅРёС‚СЊСЃСЏ).
-       OPER СЂРµР·РѕР»РІРёС‚СЊ Р’РќРЈРўР Р РїСЂРѕС†РµРґСѓСЂС‹ С‡РµСЂРµР· CURRENT_USER (РїРѕ РѕР±СЂР°Р·С†Сѓ
-       rslv_operator_current_t), Р° РЅРµ СЃРЅР°СЂСѓР¶Рё.
-     - BANK: Р±РёР·РЅРµСЃ-РєР»СЋС‡ РїРѕРёСЃРєР° вЂ” BIC (СЃРј. IX_BANKS_BIC), С‚Р°РєР¶Рµ РїСЂРµРґСѓСЃРјРѕС‚СЂРµС‚СЊ
-       SWIFT РєР°Рє Р°Р»СЊС‚РµСЂРЅР°С‚РёРІРЅС‹Р№ РєР»СЋС‡ (РїРѕ Р°РЅР°Р»РѕРіРёРё СЃ API_FIND_ACC/API_INS_ACC).
-       РР·РІРµСЃС‚РЅРѕ, С‡С‚Рѕ API_INS_ACC РќР• СЃРѕР·РґР°С‘С‚ Р±Р°РЅРє-СЃСѓР±СЉРµРєС‚ СЃР°Рј вЂ” РёС‰РµС‚ С‚РѕР»СЊРєРѕ
-       СЃСЂРµРґРё СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓСЋС‰РёС… OD_BANKS/OD_FACES, Р·РЅР°С‡РёС‚ API_INS_BANK
-       РѕР±СЏР·Р°С‚РµР»РµРЅ РєР°Рє РѕС‚РґРµР»СЊРЅС‹Р№ С€Р°Рі Р”Рћ СЃРѕР·РґР°РЅРёСЏ Р±Р°РЅРєРѕРІСЃРєРѕРіРѕ СЃС‡С‘С‚Р°.
+   Решения по контракту, зафиксированные в обсуждении (актуальны на момент
+   написания заглушек, при реализации сверяться с последним состоянием
+   design-документа):
+     - CLIENT — сущность ПЛОСКАЯ (без исторических версий, без
+       as_of/NEW_B_DATE), в отличие от FACE/SHARE. UPD правит запись на месте
+       по ID, как API_UPD_ACC.
+     - BANK - лицо (оно историческое, as_of версионирует только его) плюс
+       плоская запись OD_BANKS, которая при повторе просто перезаписывается.
+     - CLIENT: бизнес-ключ поиска — (NUMBER, PLAN_ID, ISSUER), см. constraint
+       U_CLIENTS и rslv_client_t. PLAN_ID резолвится по PLAN_SYS_NAME через
+       OD_ACC_PLANS.SYS_NAME (в текущем прикладном коде — 'REESTR', жёстко).
+       SUBTYPE передаётся готовым числом. Справочник значений — OD_SYS_TABS
+       где CODE='REESTR_SUBTYPE', колонка NUM (1=владелец, 2=номинальный
+       держатель, 3=довер.управляющий, 4=доп.инвестиционные паи,
+       5=залогодержатель, 6=выдаваемые инвестиционные паи, 7=счёт фонда,
+       8=неустановленные лица, 9=депозитный лиц.счёт, 10=казначейский счёт
+       эмитента, 102=номинальный держатель ЦД). Маппинг мнемоника->NUM
+       фиксируется в конфиге обвеса, привязка по NUM (стабилен),
+       не по NAME (текст описания, может измениться).
+       OPER резолвить ВНУТРИ процедуры через CURRENT_USER (по образцу
+       rslv_operator_current_t), а не снаружи.
+     - BANK: бизнес-ключ поиска — BIC (см. IX_BANKS_BIC) либо SWIFT (по
+       аналогии с API_FIND_ACC/API_INS_ACC); BIC необязателен, банк бывает
+       и без него. Известно, что API_INS_ACC НЕ создаёт банк-субъект сам —
+       ищет только среди уже существующих OD_BANKS/OD_FACES, значит банк
+       должен быть создан отдельным шагом ДО банковского счёта.
    ============================================================================ */
 
 
-/* РЎРїСЂР°РІРѕС‡РЅРёРє CLASS РґР»СЏ API_INS_SHARE/API_FIND_SHARE (РЅРµ Р·Р°РіР»СѓС€РєР°, РїСЂРѕС†РµРґСѓСЂС‹
-   СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓСЋС‚ РІ РїР»Р°С‚С„РѕСЂРјРµ, СЌС‚Рѕ С‚РѕР»СЊРєРѕ РґР»СЏ РѕР±РІРµСЃР°) вЂ” OD_SYS_TABS
-   РіРґРµ CODE='SHARE_CLASS', РєРѕР»РѕРЅРєР° NUM: 1=Р°РєС†РёСЏ, 2=РѕР±Р»РёРіР°С†РёСЏ, 3=РІРµРєСЃРµР»СЊ,
-   4=РѕРїС†РёРѕРЅ, 5=С„СЊСЋС‡РµСЂСЃ, 6=Р±Р°РЅРє.СЃРµСЂС‚РёС„РёРєР°С‚, 7=РґРµРїРѕР·РёС‚Р°СЂРЅР°СЏ СЂР°СЃРїРёСЃРєР°,
-   8=РєРѕРЅРѕСЃР°РјРµРЅС‚, 9=РІР°СЂСЂР°РЅС‚, 10=РїР°Р№, 11=СѓСЃС‚Р°РІРЅРѕР№ РєР°РїРёС‚Р°Р» РћРћРћ, 12=Р·Р°РєР»Р°РґРЅР°СЏ,
-   13=РёРїРѕС‚РµС‡РЅС‹Р№ СЃРµСЂС‚РёС„РёРєР°С‚ СѓС‡Р°СЃС‚РёСЏ, 14=РєР»РёСЂРёРЅРіРѕРІС‹Р№ СЃРµСЂС‚РёС„РёРєР°С‚ СѓС‡Р°СЃС‚РёСЏ,
-   15=С†РёС„СЂРѕРІРѕР№ Р°РєС‚РёРІ, 16=С†РёС„СЂРѕРІРѕРµ СЃРІРёРґРµС‚РµР»СЊСЃС‚РІРѕ, 17=РєСЂРёРїС‚РѕРІР°Р»СЋС‚Р°.
-   РњР°РїРїРёРЅРі РјРЅРµРјРѕРЅРёРєР°->NUM
-   С‚Р°РєР¶Рµ РІ РєРѕРЅС„РёРіРµ РѕР±РІРµСЃР°, РїСЂРёРІСЏР·РєР° РїРѕ NUM. */
+/* Справочник CLASS для API_INS_SHARE/API_FIND_SHARE (не заглушка, процедуры
+   уже существуют в платформе, это только для обвеса) — OD_SYS_TABS
+   где CODE='SHARE_CLASS', колонка NUM: 1=акция, 2=облигация, 3=вексель,
+   4=опцион, 5=фьючерс, 6=банк.сертификат, 7=депозитарная расписка,
+   8=коносамент, 9=варрант, 10=пай, 11=уставной капитал ООО, 12=закладная,
+   13=ипотечный сертификат участия, 14=клиринговый сертификат участия,
+   15=цифровой актив, 16=цифровое свидетельство, 17=криптовалюта.
+   Маппинг мнемоника->NUM
+   также в конфиге обвеса, привязка по NUM. */
 
 
-/* ---------- CLIENT (Р»РёС†РµРІРѕР№ СЃС‡С‘С‚, OD_CLIENTS) ---------- */
+/* ---------- CLIENT (лицевой счёт, OD_CLIENTS) ---------- */
 
 SET TERM ^ ;
 
-/* API_FIND_CLIENT Р·РґРµСЃСЊ РЎРћР—РќРђРўР•Р›Р¬РќРћ РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚: СЂРµР°Р»СЊРЅР°СЏ РїСЂРѕС†РµРґСѓСЂР° СѓР¶Рµ
-   РЅР°РїРёСЃР°РЅР° Рё Р»РµР¶РёС‚ РІ Fansy-Foundation/dBase/proc.sql вЂ” РµС‘ РЅР°РєР°С‚С‹РІР°С‚СЊ РѕС‚РґРµР»СЊРЅРѕ.
-   Р•С‘ РёРЅС‚РµСЂС„РµР№СЃ:
+/* API_FIND_CLIENT здесь СОЗНАТЕЛЬНО отсутствует: реальная процедура уже
+   написана и лежит в Fansy-Foundation/dBase/proc.sql — её накатывать отдельно.
+   Её интерфейс:
      API_FIND_CLIENT(NUMBER VARCHAR(128), FIELDS VARCHAR(16368))
        RETURNS (ID INTEGER, MULTI_ID VARCHAR(4000))
-   РР· FIELDS РїРѕРЅРёРјР°РµС‚ PLAN_ID, ISSUER, STATE (РІСЃРµ РѕРїС†РёРѕРЅР°Р»СЊРЅРѕ); РµСЃР»Рё PLAN_ID
-   РЅРµ Р·Р°РґР°РЅ, Р±РµСЂС‘С‚ РµРіРѕ РёР· OD_OPERATORS РїРѕ С‚РµРєСѓС‰РµРјСѓ РїРѕР»СЊР·РѕРІР°С‚РµР»СЋ РїРѕРґРєР»СЋС‡РµРЅРёСЏ.
-   РџСЂРё РЅРµСЃРєРѕР»СЊРєРёС… РїРѕРґС…РѕРґСЏС‰РёС… Р·Р°РїРёСЃСЏС… ID РЅРµ Р·Р°РїРѕР»РЅСЏРµС‚СЃСЏ, СЃРїРёСЃРѕРє СѓС…РѕРґРёС‚ РІ
-   MULTI_ID (РѕР±РІРµСЃ С‚СЂР°РєС‚СѓРµС‚ СЌС‚Рѕ РєР°Рє РѕС€РёР±РєСѓ РЅРµРѕРґРЅРѕР·РЅР°С‡РЅРѕСЃС‚Рё, Р° РЅРµ В«РЅРµ РЅР°Р№РґРµРЅРѕВ»).
-   Р Р°РЅСЊС€Рµ РІ СЌС‚РѕРј С„Р°Р№Р»Рµ Р±С‹Р»Р° Р·Р°РіР»СѓС€РєР° СЃ РґСЂСѓРіРѕР№ СЃРёРіРЅР°С‚СѓСЂРѕР№ вЂ” СѓРґР°Р»РµРЅР°, С‡С‚РѕР±С‹
-   CREATE OR ALTER РЅРµ Р·Р°С‚С‘СЂ СЂР°Р±РѕС‡СѓСЋ РїСЂРѕС†РµРґСѓСЂСѓ. */
+   Из FIELDS понимает PLAN_ID, ISSUER, STATE (все опционально); если PLAN_ID
+   не задан, берёт его из OD_OPERATORS по текущему пользователю подключения.
+   При нескольких подходящих записях ID не заполняется, список уходит в
+   MULTI_ID (обвес трактует это как ошибку неоднозначности, а не «не найдено»).
+   Раньше в этом файле была заглушка с другой сигнатурой — удалена, чтобы
+   CREATE OR ALTER не затёр рабочую процедуру. */
 
 
-/* API_INS_CLIENT РІ РїР»Р°С‚С„РѕСЂРјРµ РќР• РЎРЈР©Р•РЎРўР’РЈР•Рў Рё СЌС‚РёРј СЃРєСЂРёРїС‚РѕРј РЅРµ СЃРѕР·РґР°С‘С‚СЃСЏ:
-   Р»РёС†РµРІРѕР№ СЃС‡С‘С‚ РІСЃС‚Р°РІР»СЏРµС‚СЃСЏ РЅР°РїСЂСЏРјСѓСЋ С‡РµСЂРµР· OD_PR_INSERT_CLIENT (СЃРј.
-   cte/engine.py, ClientHandler). Р—Р°РіРѕС‚РѕРІРєР° РїСЂРѕС†РµРґСѓСЂС‹ СЃРѕС…СЂР°РЅРµРЅР° РІ
-   sql/draft_api_ins_client.sql вЂ” РќР• РЅР°РєР°С‚С‹РІР°С‚СЊ, РїРѕРєР° РЅРµ СЂРµС€РµРЅРѕ, С‡С‚Рѕ
-   API_INS_CLIENT РЅСѓР¶РЅР°. */
+/* API_INS_CLIENT в платформе НЕ СУЩЕСТВУЕТ и этим скриптом не создаётся:
+   лицевой счёт вставляется напрямую через OD_PR_INSERT_CLIENT (см.
+   cte/engine.py, ClientHandler). Заготовка процедуры сохранена в
+   sql/draft_api_ins_client.sql — НЕ накатывать, пока не решено, что
+   API_INS_CLIENT нужна. */
 
 
 CREATE OR ALTER PROCEDURE API_UPD_CLIENT (
@@ -96,118 +109,266 @@ CREATE OR ALTER PROCEDURE API_UPD_CLIENT (
 )
 AS
 begin
-    /* STUB: РЅРµ СЂРµР°Р»РёР·РѕРІР°РЅРѕ.
-       TODO: СЂР°Р·Р±РѕСЂ FIELDS РїРѕСЃС‚СЂРѕС‡РЅРѕ (f_Token(FIELDS, f_Chr(10), k))
-       РїРѕ РѕР±СЂР°Р·С†Сѓ API_UPD_ACC, РїСЂРёРјРµРЅРµРЅРёРµ Рє РєРѕР»РѕРЅРєР°Рј OD_CLIENTS.
-       РџР»РѕСЃРєРѕРµ РѕР±РЅРѕРІР»РµРЅРёРµ, Р±РµР· РІРµСЂСЃРёРѕРЅРёСЂРѕРІР°РЅРёСЏ (as_of РЅРµ РїРѕРґРґРµСЂР¶РёРІР°РµС‚СЃСЏ). */
+    /* STUB: не реализовано.
+       TODO: разбор FIELDS построчно (f_Token(FIELDS, f_Chr(10), k))
+       по образцу API_UPD_ACC, применение к колонкам OD_CLIENTS.
+       Плоское обновление, без версионирования (as_of не поддерживается). */
 end^
 
 
-/* ---------- BANK (Р±Р°РЅРє РєР°Рє СЃСѓР±СЉРµРєС‚, OD_FACES + OD_U_FACES + OD_BANKS) ---------- */
+/* ---------- BANK (банк как субъект, OD_FACES + OD_U_FACES + OD_BANKS) ---------- */
 
+/* Банк - обычное юрлицо (OD_FACES + OD_U_FACES) плюс запись OD_BANKS. Лицо
+   обвес ведёт платформенными API_FIND_FACE / API_INS_FACE / API_UPD_FACE
+   (с историей), а запись OD_BANKS - процедурами ниже (без истории).
+   Образец прикладного кода, создающего банк вручную:
+   Fansy-Foundation/examples-code/metaM__F_REESTR_V04_59.mes. */
+
+/* РЕАЛИЗОВАНО. Поиск банка в OD_BANKS: сначала по BIC, затем по SWIFT.
+   Возвращает SELF_ID лица-банка либо NULL.
+
+   BIC   - БИК; пустой не используется.
+   SWIFT - SWIFT-код; пустой не используется, регистр не учитывается.
+
+   BIC необязателен (иностранный банк бывает только со SWIFT), поэтому ищется
+   по любому из двух заданных ключей. Банк без обоих кодов процедурой не
+   находится - такой банк обвес ищет как обычное лицо (API_FIND_FACE).
+   OD_BANKS.U_FACE - ID лица (FK на OD_FACES.ID); наружу отдаётся SELF_ID, как
+   у остальных процедур (у первой версии лица они совпадают). */
 CREATE OR ALTER PROCEDURE API_FIND_BANK (
-    BIC VARCHAR(21)
-)
-RETURNS (
-    ID INTEGER
-)
-AS
-begin
-    /* STUB: РЅРµ СЂРµР°Р»РёР·РѕРІР°РЅРѕ.
-       TODO: select max(U_FACE) from OD_BANKS where f_LRTrim(BIC)=f_LRTrim(:BIC)
-       into :ID; РµСЃР»Рё РЅРµ РЅР°Р№РґРµРЅРѕ вЂ” РїРѕРїСЂРѕР±РѕРІР°С‚СЊ РїРѕ SWIFT (СЃРј. API_INS_ACC). */
-    ID = null;
-    SUSPEND;
-end^
-
-
-CREATE OR ALTER PROCEDURE API_INS_BANK (
     BIC VARCHAR(21),
-    FIELDS VARCHAR(16383)
+    SWIFT VARCHAR(12)
 )
 RETURNS (
     ID INTEGER
 )
 AS
 begin
-    /* STUB: РЅРµ СЂРµР°Р»РёР·РѕРІР°РЅРѕ.
-       TODO: find-or-create РїРѕ РѕР±СЂР°Р·С†Сѓ inline-РєРѕРґР° РёР·
-       Fansy-Foundation/examples-code/metaM__F_REESTR_V04_59.mes:
-         1) select ID from API_FIND_BANK(:BIC) into :ID;
-         2) РµСЃР»Рё РЅРµ РЅР°Р№РґРµРЅРѕ:
-              ID = gen_id(OD_FACES_ID_GEN, 1);
-              insert into OD_FACES (ID, NAME, INN, HOME_ADR, S_TYPE, STATE,
-                  LAST_FLAG, B_DATE) values (:ID, ..., 1, 643, 1, <РЅР°С‡Р°Р»Рѕ РІСЂРµРјС‘РЅ>);
-              insert into OD_U_FACES (FACE, FULL_NAME, FS, UPTYPE)
-                  values (:ID, ..., 16, 0);
-              insert into OD_BANKS (U_FACE, BIC, KORR, CITY)
-                  values (:ID, :BIC, ..., ...);
-         3) execute procedure API_UPD_BANK(:ID, :FIELDS); */
     ID = null;
-    SUSPEND;
+    if (f_IsBlank(BIC) = 0) then
+        select max(F.SELF_ID) from OD_BANKS B
+               join OD_FACES F on F.ID = B.U_FACE
+         where f_LRTrim(B.BIC) = f_LRTrim(:BIC)
+          into :ID;
+    if (ID is null and f_IsBlank(SWIFT) = 0) then
+        select max(F.SELF_ID) from OD_BANKS B
+               join OD_FACES F on F.ID = B.U_FACE
+         where f_LRTrim(f_Upper(B.SWIFT)) = f_LRTrim(f_Upper(:SWIFT))
+          into :ID;
+    suspend;
 end^
 
 
-CREATE OR ALTER PROCEDURE API_UPD_BANK (
-    ID INTEGER,
+/* РЕАЛИЗОВАНО. Upsert записи банка в OD_BANKS (PK U_FACE). Конвенция
+   платформы для таких процедур - префикс SET (ср. API_SET_FC_CODE).
+
+   FACE   - SELF_ID лица (в OD_BANKS пишется как U_FACE; формально FK смотрит
+            на OD_FACES.ID, у первой версии лица они совпадают). Само лицо
+            (OD_FACES + OD_U_FACES) должно уже существовать - его создаёт
+            API_INS_FACE.
+   FIELDS - BIC, KORR, CITY, SWIFT, REG_NUM, IS_INSURANCE; пустое значение =
+            <<не задано>>; прочие имена игнорируются (как во всех API_*).
+
+   Записи ещё нет - вставляется (IS_INSURANCE по умолчанию 1, как в таблице),
+   есть - обновляются только переданные поля. Истории у OD_BANKS нет: повторный
+   вызов просто перезаписывает поля.
+
+   Не проверено: по сводке триггеров OD_BANKS_BI_10 и OD_BANKS_BU_10 меняют
+   OD_P_FACES - возможно, сами заводят вид деятельности <<банк>>. */
+CREATE OR ALTER PROCEDURE API_SET_BANK (
+    FACE INTEGER,
     FIELDS VARCHAR(16383)
 )
 AS
+declare variable K integer;
+declare variable I integer;
+declare variable FIELD varchar(500);
+declare variable FLD varchar(64);
+declare variable VL varchar(255);
+declare variable V_BIC varchar(10);
+declare variable V_KORR varchar(255);
+declare variable V_CITY varchar(64);
+declare variable V_SWIFT varchar(12);
+declare variable V_REG_NUM varchar(24);
+declare variable V_IS_INSURANCE integer;
+declare variable H_BIC integer;
+declare variable H_KORR integer;
+declare variable H_CITY integer;
+declare variable H_SWIFT integer;
+declare variable H_REG_NUM integer;
+declare variable H_IS_INSURANCE integer;
+declare variable C integer;
 begin
-    /* STUB: РЅРµ СЂРµР°Р»РёР·РѕРІР°РЅРѕ.
-       TODO: СЂР°Р·Р±РѕСЂ FIELDS РїРѕСЃС‚СЂРѕС‡РЅРѕ, РїСЂРёРјРµРЅРµРЅРёРµ Рє OD_FACES (NAME/INN/...),
-       OD_U_FACES (FULL_NAME/...), OD_BANKS (KORR/CITY/SWIFT/REG_NUM/...).
-       РџР»РѕСЃРєРѕРµ РѕР±РЅРѕРІР»РµРЅРёРµ, Р±РµР· РІРµСЂСЃРёРѕРЅРёСЂРѕРІР°РЅРёСЏ. */
+    V_BIC = null;  V_KORR = null;  V_CITY = null;  V_SWIFT = null;  V_REG_NUM = null;
+    V_IS_INSURANCE = null;
+    H_BIC = 0;  H_KORR = 0;  H_CITY = 0;  H_SWIFT = 0;  H_REG_NUM = 0;  H_IS_INSURANCE = 0;
+
+    /* Разбор FIELDS: пары ИМЯ=ЗНАЧЕНИЕ, разделённые переводом строки */
+    K = 1;
+    FIELD = f_LRTrim(f_Token(FIELDS, f_Chr(10), K));
+    while (f_IsBlank(FIELD) = 0) do begin
+        I = f_Pos('=', FIELD);
+        if (I > 1) then begin
+            FLD = f_RTrim(f_Left(FIELD, I - 1));
+            if (f_StrLen(FIELD) > I) then VL = f_LTrim(f_Copy(FIELD, I + 1, 255));
+                                     else VL = null;
+            if (f_IsBlank(VL) = 0) then begin
+                if      (FLD = 'BIC')          then begin V_BIC = VL;  H_BIC = 1;  end
+                else if (FLD = 'KORR')         then begin V_KORR = VL; H_KORR = 1; end
+                else if (FLD = 'CITY')         then begin V_CITY = VL; H_CITY = 1; end
+                else if (FLD = 'SWIFT')        then begin V_SWIFT = VL; H_SWIFT = 1; end
+                else if (FLD = 'REG_NUM')      then begin V_REG_NUM = VL; H_REG_NUM = 1; end
+                else if (FLD = 'IS_INSURANCE') then begin V_IS_INSURANCE = f_AsInteger(VL); H_IS_INSURANCE = 1; end
+            end
+        end
+        K = K + 1;
+        FIELD = f_LRTrim(f_Token(FIELDS, f_Chr(10), K));
+    end
+
+    select count(*) from OD_BANKS where U_FACE = :FACE into :C;
+
+    if (C = 0) then
+        insert into OD_BANKS (U_FACE, BIC, KORR, CITY, SWIFT, REG_NUM, IS_INSURANCE)
+            values (:FACE, :V_BIC, :V_KORR, :V_CITY, :V_SWIFT, :V_REG_NUM, coalesce(:V_IS_INSURANCE, 1));
+    else if (H_BIC + H_KORR + H_CITY + H_SWIFT + H_REG_NUM + H_IS_INSURANCE > 0) then
+        update OD_BANKS
+           set BIC          = case when :H_BIC = 1          then :V_BIC          else BIC          end,
+               KORR         = case when :H_KORR = 1         then :V_KORR         else KORR         end,
+               CITY         = case when :H_CITY = 1         then :V_CITY         else CITY         end,
+               SWIFT        = case when :H_SWIFT = 1        then :V_SWIFT        else SWIFT        end,
+               REG_NUM      = case when :H_REG_NUM = 1      then :V_REG_NUM      else REG_NUM      end,
+               IS_INSURANCE = case when :H_IS_INSURANCE = 1 then :V_IS_INSURANCE else IS_INSURANCE end
+         where U_FACE = :FACE;
 end^
 
 
 /* ============================================================================
-   РњРќРћР–Р•РЎРўР’Р•РќРќР«Р• РђРўР РР‘РЈРўР« (РєРѕР»Р»РµРєС†РёРё), РґРѕС‡РµСЂРЅРёРµ РїРѕ РѕС‚РЅРѕС€РµРЅРёСЋ Рє Р»РёС†Сѓ/Р»РёС†.СЃС‡С‘С‚Сѓ.
+   МНОЖЕСТВЕННЫЕ АТРИБУТЫ (коллекции), дочерние по отношению к лицу/лиц.счёту.
 
-   Р”РµР»СЏС‚СЃСЏ РЅР° РґРІР° РєР»Р°СЃСЃР° РїРѕ РЅР°Р»РёС‡РёСЋ СЃРѕР±СЃС‚РІРµРЅРЅРѕР№ РёРґРµРЅС‚РёС‡РЅРѕСЃС‚Рё:
+   Делятся на два класса по наличию собственной идентичности:
 
-   1) Р‘Р•Р—РљР›Р®Р§Р•Р’Р«Р• вЂ” СЃСѓСЂСЂРѕРіР°С‚РЅРѕРіРѕ ID РЅРµС‚, Р·Р°РїРёСЃСЊ СЃР°РјР° СЃРµР±Рµ РєР»СЋС‡, РґРѕСЃС‚Р°С‚РѕС‡РЅРѕ
-      РѕРґРЅРѕР№ upsert-РїСЂРѕС†РµРґСѓСЂС‹ (РєРѕРЅРІРµРЅС†РёСЏ РїР»Р°С‚С„РѕСЂРјС‹ РґР»СЏ С‚Р°РєРёС… вЂ” РїСЂРµС„РёРєСЃ SET,
-      СЃСЂ. СЃСѓС‰РµСЃС‚РІСѓСЋС‰РёРµ API_SET_FC_CODE / API_SET_SH_CODE):
-        - РєРѕРґС‹ Р»РёС†Р° Сѓ РєРѕРґРёСЂРѕРІС‰РёРєРѕРІ: OD_FACE_CODERS, PK(CODER,FACE)
-          -> API_SET_FC_CODE РЈР–Р• РЎРЈР©Р•РЎРўР’РЈР•Рў, РЅРёС‡РµРіРѕ РїРёСЃР°С‚СЊ РЅРµ РЅСѓР¶РЅРѕ
-        - РІРёРґС‹ РґРµСЏС‚РµР»СЊРЅРѕСЃС‚Рё/Р»РёС†РµРЅР·РёРё: OD_P_FACES, UNIQUE(FACE,DIAL_MODE,BEG_LIC)
-          -> API_SET_P_FACE, Р·Р°РіР»СѓС€РєР° РЅРёР¶Рµ
+   1) БЕЗКЛЮЧЕВЫЕ — суррогатного ID нет, запись сама себе ключ, достаточно
+      одной upsert-процедуры (конвенция платформы для таких — префикс SET,
+      ср. существующие API_SET_FC_CODE / API_SET_SH_CODE):
+        - коды лица у кодировщиков: OD_FACE_CODERS, PK(CODER,FACE)
+          -> API_SET_FC_CODE УЖЕ СУЩЕСТВУЕТ, ничего писать не нужно
+        - виды деятельности/лицензии: OD_P_FACES, UNIQUE(FACE,DIAL_MODE,BEG_LIC)
+          -> API_SET_P_FACE, реализована ниже
 
-   2) РР”Р•РќРўРР¤РР¦РР РЈР•РњР«Р• вЂ” РµСЃС‚СЊ СЃСѓСЂСЂРѕРіР°С‚РЅС‹Р№ ID, РЅСѓР¶РЅР° С‚СЂРѕР№РєР° FIND/INS/UPD:
-        - СѓРїРѕР»РЅРѕРјРѕС‡РµРЅРЅС‹Рµ Р»РёС†Р°: OD_A_FACES, РєР»СЋС‡ (FACE, WORKER, IS_A=1)
-        - Р°С„С„РёР»РёСЂРѕРІР°РЅРЅС‹Рµ Р»РёС†Р°: OD_AFFILS, РєР»СЋС‡ (CLIENT, FACE, RELATION);
-          Р’РђР–РќРћ: РІРёСЃСЏС‚ РЅР° Р›РР¦Р•Р’РћРњ РЎР§РЃРўР• (OD_AFFILS.CLIENT), РЅРµ РЅР° Р»РёС†Рµ
+   2) ИДЕНТИФИЦИРУЕМЫЕ — есть суррогатный ID, нужна тройка FIND/INS/UPD:
+        - уполномоченные лица: OD_A_FACES, ключ (FACE, WORKER, IS_A=1)
+        - аффилированные лица: OD_AFFILS, ключ (CLIENT, FACE, RELATION);
+          ВАЖНО: висят на ЛИЦЕВОМ СЧЁТЕ (OD_AFFILS.CLIENT), не на лице
    ============================================================================ */
 
 
-/* ---------- ACTIVITY (РІРёРґС‹ РґРµСЏС‚РµР»СЊРЅРѕСЃС‚Рё / Р»РёС†РµРЅР·РёРё, OD_P_FACES) ---------- */
+/* ---------- ACTIVITY (виды деятельности / лицензии, OD_P_FACES) ---------- */
 
+/* РЕАЛИЗОВАНО. Upsert вида деятельности (лицензии) лица в OD_P_FACES.
+   Таблица без суррогатного ID, запись сама себе ключ: UNIQUE(FACE, DIAL_MODE,
+   BEG_LIC). Конвенция платформы для таких процедур — префикс SET
+   (ср. API_SET_FC_CODE).
+
+   FACE      - SELF_ID лица. Формально FK смотрит на OD_FACES.ID, но
+               семантический ключ везде SELF_ID; у первой версии лица они
+               совпадают, а триггеры OD_P_FACES вызывают OD_PR_GET_FACE_SELF_ID.
+   DIAL_MODE - NUM из OD_SYS_TABS где CODE='DIAL_MODE' (0..38).
+   FIELDS    - NUM_LIC, PLACE_LIC, BEG_LIC, END_LIC. Даты в виде ГГГГ-ММ-ДД
+               (как пишет DSL) или ДД.ММ.ГГГГ; пустое значение = «не задано»;
+               прочие имена игнорируются (как во всех API_* платформы).
+
+   Нашлась запись с тем же (FACE, DIAL_MODE, BEG_LIC) - обновляются только
+   переданные поля, иначе вставляется новая.
+
+   Ловушка NULL в UNIQUE: BEG_LIC может быть NULL (вид деятельности без
+   лицензии), а Firebird считает NULL-ы в UNIQUE различными. Поэтому поиск
+   идёт условием (BEG_LIC = :V_BEG_LIC or (BEG_LIC is null and :V_BEG_LIC is
+   null)) - иначе при каждом прогоне сценария появлялся бы новый дубль.
+
+   Некорректный период (END_LIC раньше BEG_LIC) и пересечение периодов одного
+   вида деятельности отсекают триггеры OD_P_FACES (судя по именам исключений -
+   OD_EX_PERIOD_INTERVAL и OD_EX_PERIOD_INTERSEC). */
 CREATE OR ALTER PROCEDURE API_SET_P_FACE (
     FACE INTEGER,
     DIAL_MODE INTEGER,
     FIELDS VARCHAR(16383)
 )
 AS
+declare variable K integer;
+declare variable I integer;
+declare variable FIELD varchar(500);
+declare variable FLD varchar(64);
+declare variable VL varchar(255);
+declare variable V_NUM_LIC varchar(255);
+declare variable V_PLACE_LIC varchar(253);
+declare variable V_BEG_LIC timestamp;
+declare variable V_END_LIC timestamp;
+declare variable H_NUM_LIC integer;
+declare variable H_PLACE_LIC integer;
+declare variable H_END_LIC integer;
+declare variable C integer;
 begin
-    /* STUB: РЅРµ СЂРµР°Р»РёР·РѕРІР°РЅРѕ.
-       TODO: upsert РІ OD_P_FACES (С‚Р°Р±Р»РёС†Р° Р±РµР· СЃСѓСЂСЂРѕРіР°С‚РЅРѕРіРѕ ID):
-         1) СЂР°Р·РѕР±СЂР°С‚СЊ РёР· FIELDS: NUM_LIC, PLACE_LIC, BEG_LIC, END_LIC
-         2) РїРѕРёСЃРє СЃСѓС‰РµСЃС‚РІСѓСЋС‰РµР№ СЃС‚СЂРѕРєРё РїРѕ UNIQUE(FACE, DIAL_MODE, BEG_LIC).
-            Р’РќРРњРђРќРР•: BEG_LIC nullable, Р° Firebird СЃС‡РёС‚Р°РµС‚ NULL-С‹ РІ UNIQUE
-            СЂР°Р·Р»РёС‡РЅС‹РјРё вЂ” РїРѕСЌС‚РѕРјСѓ СѓСЃР»РѕРІРёРµ РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ РІРёРґР°
-              (BEG_LIC = :BEG_LIC or (BEG_LIC is null and :BEG_LIC is null))
-            РёРЅР°С‡Рµ РїСЂРё РєР°Р¶РґРѕРј РїСЂРѕРіРѕРЅРµ СЃС†РµРЅР°СЂРёСЏ Р±СѓРґРµС‚ РїРѕСЏРІР»СЏС‚СЊСЃСЏ РЅРѕРІС‹Р№ РґСѓР±Р»СЊ
-            РІРёРґР° РґРµСЏС‚РµР»СЊРЅРѕСЃС‚Рё Р±РµР· Р»РёС†РµРЅР·РёРё.
-         3) РЅР°С€Р»Рё -> update, РЅРµ РЅР°С€Р»Рё -> insert
-       DIAL_MODE вЂ” РєРѕРґ РёР· OD_SYS_TABS РіРґРµ CODE='DIAL_MODE' (0..37).
-       FACE вЂ” СЌС‚Рѕ SELF_ID Р»РёС†Р° (С„РѕСЂРјР°Р»СЊРЅРѕ FK СЃРјРѕС‚СЂРёС‚ РЅР° OD_FACES.ID, РЅРѕ
-       СЃРµРјР°РЅС‚РёС‡РµСЃРєРёР№ РєР»СЋС‡ РІРµР·РґРµ SELF_ID; РґР»СЏ РїРµСЂРІРѕР№ РІРµСЂСЃРёРё РѕРЅРё СЃРѕРІРїР°РґР°СЋС‚). */
+    V_NUM_LIC = null;  V_PLACE_LIC = null;  V_BEG_LIC = null;  V_END_LIC = null;
+    H_NUM_LIC = 0;     H_PLACE_LIC = 0;     H_END_LIC = 0;
+
+    /* Разбор FIELDS: пары ИМЯ=ЗНАЧЕНИЕ, разделённые переводом строки */
+    K = 1;
+    FIELD = f_LRTrim(f_Token(FIELDS, f_Chr(10), K));
+    while (f_IsBlank(FIELD) = 0) do begin
+        I = f_Pos('=', FIELD);
+        if (I > 1) then begin
+            FLD = f_RTrim(f_Left(FIELD, I - 1));
+            if (f_StrLen(FIELD) > I) then VL = f_LTrim(f_Copy(FIELD, I + 1, 255));
+                                     else VL = null;
+            if (f_IsBlank(VL) = 0) then begin
+                if      (FLD = 'NUM_LIC')   then begin V_NUM_LIC   = VL; H_NUM_LIC   = 1; end
+                else if (FLD = 'PLACE_LIC') then begin V_PLACE_LIC = VL; H_PLACE_LIC = 1; end
+                else if (FLD = 'BEG_LIC')   then V_BEG_LIC = cast(VL as timestamp);
+                else if (FLD = 'END_LIC')   then begin V_END_LIC   = cast(VL as timestamp); H_END_LIC = 1; end
+            end
+        end
+        K = K + 1;
+        FIELD = f_LRTrim(f_Token(FIELDS, f_Chr(10), K));
+    end
+
+    select count(*) from OD_P_FACES
+     where FACE = :FACE and DIAL_MODE = :DIAL_MODE
+       and (BEG_LIC = :V_BEG_LIC or (BEG_LIC is null and :V_BEG_LIC is null))
+      into :C;
+
+    if (C = 0) then
+        insert into OD_P_FACES (FACE, DIAL_MODE, NUM_LIC, BEG_LIC, END_LIC, PLACE_LIC)
+            values (:FACE, :DIAL_MODE, :V_NUM_LIC, :V_BEG_LIC, :V_END_LIC, :V_PLACE_LIC);
+    else if (H_NUM_LIC + H_PLACE_LIC + H_END_LIC > 0) then
+        update OD_P_FACES
+           set NUM_LIC   = case when :H_NUM_LIC   = 1 then :V_NUM_LIC   else NUM_LIC   end,
+               PLACE_LIC = case when :H_PLACE_LIC = 1 then :V_PLACE_LIC else PLACE_LIC end,
+               END_LIC   = case when :H_END_LIC   = 1 then :V_END_LIC   else END_LIC   end
+         where FACE = :FACE and DIAL_MODE = :DIAL_MODE
+           and (BEG_LIC = :V_BEG_LIC or (BEG_LIC is null and :V_BEG_LIC is null));
 end^
 
 
-/* ---------- ATTORNEY (СѓРїРѕР»РЅРѕРјРѕС‡РµРЅРЅС‹Рµ Р»РёС†Р°, OD_A_FACES) ---------- */
+/* ---------- ATTORNEY (уполномоченные лица, OD_A_FACES) ---------- */
 
+/* РЕАЛИЗОВАНО. Поиск связи «доверитель - уполномоченный» в OD_A_FACES
+   (только записи с IS_A = 1). Возвращает ID записи либо NULL.
+
+   FACE   - доверитель (SELF_ID лица).
+   WORKER - уполномоченный (SELF_ID лица) либо NULL, если уполномоченного как
+            лица в системе нет; тогда ключ вырождается в (FACE, NAME).
+   NAME   - наименование уполномоченного, используется только при WORKER = NULL.
+
+   Связь хранится направленно (FACE - доверитель, WORKER - уполномоченный), но
+   читается с обеих сторон, поэтому при заданном WORKER ищется и прямая запись
+   (FACE, WORKER), и зеркальная (WORKER, FACE): зеркальное описание той же
+   связи (подблок attorney, объявленный под вторым участником) не создаст
+   перевёрнутый дубль. Прямая запись предпочтительнее зеркальной.
+
+   ОГРАНИЧЕНИЕ: найденная зеркальная запись возвращается молча, как обычная.
+   Сообщать об этом ошибкой было бы правильнее, но платформа заводит
+   исключения заранее, а подходящего готового нет; заводить новое исключение
+   ради этого не стали. */
 CREATE OR ALTER PROCEDURE API_FIND_A_FACE (
     FACE INTEGER,
     WORKER INTEGER,
@@ -218,20 +379,39 @@ RETURNS (
 )
 AS
 begin
-    /* STUB: РЅРµ СЂРµР°Р»РёР·РѕРІР°РЅРѕ.
-       TODO: РїРѕРёСЃРє СЃРёРјРјРµС‚СЂРёС‡РЅС‹Рј СѓСЃР»РѕРІРёРµРј (СЃРІСЏР·СЊ С…СЂР°РЅРёС‚СЃСЏ РЅР°РїСЂР°РІР»РµРЅРЅРѕ, РЅРѕ
-       С‡РёС‚Р°РµС‚СЃСЏ СЃ РѕР±РµРёС… СЃС‚РѕСЂРѕРЅ):
-         where (FACE = :FACE or WORKER = :FACE) and IS_A = 1
-           and (WORKER = :WORKER or (:WORKER is null and NAME = :NAME))
-       РЎРёРјРјРµС‚СЂРёСЏ РЅСѓР¶РЅР°, С‡С‚РѕР±С‹ РїРѕР№РјР°С‚СЊ Р·РµСЂРєР°Р»СЊРЅРѕРµ РѕРїРёСЃР°РЅРёРµ С‚РѕР№ Р¶Рµ СЃРІСЏР·Рё
-       (РїРѕРґР±Р»РѕРє attorney, РѕР±СЉСЏРІР»РµРЅРЅС‹Р№ РїРѕРґ РІС‚РѕСЂС‹Рј СѓС‡Р°СЃС‚РЅРёРєРѕРј) Рё РЅРµ СЃРѕР·РґР°С‚СЊ
-       РїРµСЂРµРІС‘СЂРЅСѓС‚С‹Р№ РґСѓР±Р»СЊ. РџРѕ-С…РѕСЂРѕС€РµРјСѓ РІ СЌС‚РѕРј СЃР»СѓС‡Р°Рµ РїСЂРѕС†РµРґСѓСЂР° РґРѕР»Р¶РЅР°
-       СЃРёРіРЅР°Р»РёР·РёСЂРѕРІР°С‚СЊ РѕР± РѕС€РёР±РєРµ, Р° РЅРµ РјРѕР»С‡Р° РІРµСЂРЅСѓС‚СЊ РЅР°Р№РґРµРЅРЅСѓСЋ СЃС‚СЂРѕРєСѓ. */
     ID = null;
-    SUSPEND;
+    if (WORKER is not null) then begin
+        select max(ID) from OD_A_FACES
+         where FACE = :FACE and WORKER = :WORKER and IS_A = 1
+          into :ID;
+        if (ID is null) then
+            select max(ID) from OD_A_FACES
+             where FACE = :WORKER and WORKER = :FACE and IS_A = 1
+              into :ID;
+    end
+    else if (f_IsBlank(NAME) = 0) then
+        select max(ID) from OD_A_FACES
+         where FACE = :FACE and WORKER is null and NAME = f_LRTrim(:NAME) and IS_A = 1
+          into :ID;
+    suspend;
 end^
 
 
+/* РЕАЛИЗОВАНО. Find-or-create уполномоченного лица в OD_A_FACES.
+
+   FACE, WORKER - как в API_FIND_A_FACE. Если нет ни WORKER, ни NAME в FIELDS,
+   запись не создаётся и возвращается NULL.
+   IS_A = 1 ставится ЖЁСТКО: блок attorney по смыслу и означает уполномоченного;
+   если другие значения IS_A кодируют иные роли, это будут отдельные процедуры,
+   а не параметр.
+   FIELDS - NAME, BASIS, DUTY, B_DATE, E_DATE, A_TYPE, DOC_TYPE, DOC_SER,
+   DOC_NUM, DOC_DAT, DOC_PLACE, RELATION, POWER, DOC_END, DOC_CODE (даты в
+   виде ГГГГ-ММ-ДД или ДД.ММ.ГГГГ). A_TYPE по умолчанию 0, остальное NULL.
+   Если запись уже есть (API_FIND_A_FACE), она не меняется - FIELDS игнорируются.
+
+   Поля передаются сразу в INSERT, а не через API_UPD_A_FACE (она пока
+   заглушка). ID назначает триггер OD_A_FACES_BI_10 из OD_A_FACES_ID_GEN,
+   возвращаем его через RETURNING. */
 CREATE OR ALTER PROCEDURE API_INS_A_FACE (
     FACE INTEGER,
     WORKER INTEGER,
@@ -241,21 +421,77 @@ RETURNS (
     ID INTEGER
 )
 AS
+declare variable K integer;
+declare variable I integer;
+declare variable FIELD varchar(500);
+declare variable FLD varchar(64);
+declare variable VL varchar(255);
+declare variable V_NAME varchar(255);
+declare variable V_BASIS varchar(255);
+declare variable V_DUTY varchar(255);
+declare variable V_B_DATE timestamp;
+declare variable V_E_DATE timestamp;
+declare variable V_A_TYPE integer;
+declare variable V_DOC_TYPE integer;
+declare variable V_DOC_SER varchar(25);
+declare variable V_DOC_NUM varchar(20);
+declare variable V_DOC_DAT timestamp;
+declare variable V_DOC_PLACE varchar(255);
+declare variable V_RELATION integer;
+declare variable V_POWER integer;
+declare variable V_DOC_END timestamp;
+declare variable V_DOC_CODE varchar(128);
 begin
-    /* STUB: РЅРµ СЂРµР°Р»РёР·РѕРІР°РЅРѕ.
-       TODO: find-or-create:
-         1) select ID from API_FIND_A_FACE(:FACE, :WORKER, <NAME РёР· FIELDS>)
-         2) РЅРµ РЅР°С€Р»Рё -> ID = gen_id(<РіРµРЅРµСЂР°С‚РѕСЂ OD_A_FACES>, 1); insert into
-            OD_A_FACES (ID, FACE, WORKER, IS_A, NAME, DUTY, BASIS, RELATION,
-            POWER, A_TYPE, DOC_TYPE, DOC_SER, DOC_NUM, DOC_DAT, DOC_PLACE,
-            DOC_END, DOC_CODE, B_DATE, E_DATE)
-            IS_A = 1 СЃС‚Р°РІРёС‚СЃСЏ Р–РЃРЎРўРљРћ вЂ” Р±Р»РѕРє attorney РїРѕ СЃРјС‹СЃР»Сѓ Рё РѕР·РЅР°С‡Р°РµС‚
-            СѓРїРѕР»РЅРѕРјРѕС‡РµРЅРЅРѕРіРѕ; РµСЃР»Рё РґСЂСѓРіРёРµ Р·РЅР°С‡РµРЅРёСЏ IS_A РєРѕРґРёСЂСѓСЋС‚ РёРЅС‹Рµ СЂРѕР»Рё,
-            СЌС‚Рѕ Р±СѓРґСѓС‚ РѕС‚РґРµР»СЊРЅС‹Рµ РїСЂРѕС†РµРґСѓСЂС‹, Р° РЅРµ РїР°СЂР°РјРµС‚СЂ.
-         3) execute procedure API_UPD_A_FACE(:ID, :FIELDS);
-       РРјСЏ РіРµРЅРµСЂР°С‚РѕСЂР° СѓС‚РѕС‡РЅРёС‚СЊ РїРѕ RDB$GENERATORS. */
     ID = null;
-    SUSPEND;
+    V_NAME = null;  V_BASIS = null;  V_DUTY = null;  V_B_DATE = null;  V_E_DATE = null;
+    V_A_TYPE = 0;   V_DOC_TYPE = null;  V_DOC_SER = null;  V_DOC_NUM = null;
+    V_DOC_DAT = null;  V_DOC_PLACE = null;  V_RELATION = null;  V_POWER = null;
+    V_DOC_END = null;  V_DOC_CODE = null;
+
+    /* Разбор FIELDS: пары ИМЯ=ЗНАЧЕНИЕ, разделённые переводом строки */
+    K = 1;
+    FIELD = f_LRTrim(f_Token(FIELDS, f_Chr(10), K));
+    while (f_IsBlank(FIELD) = 0) do begin
+        I = f_Pos('=', FIELD);
+        if (I > 1) then begin
+            FLD = f_RTrim(f_Left(FIELD, I - 1));
+            if (f_StrLen(FIELD) > I) then VL = f_LTrim(f_Copy(FIELD, I + 1, 255));
+                                     else VL = null;
+            if (f_IsBlank(VL) = 0) then begin
+                if      (FLD = 'NAME')      then V_NAME      = f_LRTrim(VL);
+                else if (FLD = 'BASIS')     then V_BASIS     = VL;
+                else if (FLD = 'DUTY')      then V_DUTY      = VL;
+                else if (FLD = 'B_DATE')    then V_B_DATE    = cast(VL as timestamp);
+                else if (FLD = 'E_DATE')    then V_E_DATE    = cast(VL as timestamp);
+                else if (FLD = 'A_TYPE')    then V_A_TYPE    = f_AsInteger(VL);
+                else if (FLD = 'DOC_TYPE')  then V_DOC_TYPE  = f_AsInteger(VL);
+                else if (FLD = 'DOC_SER')   then V_DOC_SER   = VL;
+                else if (FLD = 'DOC_NUM')   then V_DOC_NUM   = VL;
+                else if (FLD = 'DOC_DAT')   then V_DOC_DAT   = cast(VL as timestamp);
+                else if (FLD = 'DOC_PLACE') then V_DOC_PLACE = VL;
+                else if (FLD = 'RELATION')  then V_RELATION  = f_AsInteger(VL);
+                else if (FLD = 'POWER')     then V_POWER     = f_AsInteger(VL);
+                else if (FLD = 'DOC_END')   then V_DOC_END   = cast(VL as timestamp);
+                else if (FLD = 'DOC_CODE')  then V_DOC_CODE  = VL;
+            end
+        end
+        K = K + 1;
+        FIELD = f_LRTrim(f_Token(FIELDS, f_Chr(10), K));
+    end
+
+    /* уполномоченного нечем идентифицировать - ничего не создаём */
+    if (WORKER is null and f_IsBlank(V_NAME) <> 0) then exit;
+
+    select ID from API_FIND_A_FACE(:FACE, :WORKER, :V_NAME) into :ID;
+
+    if (ID is null) then
+        insert into OD_A_FACES (FACE, WORKER, IS_A, NAME, BASIS, DUTY, B_DATE, E_DATE,
+                                A_TYPE, DOC_TYPE, DOC_SER, DOC_NUM, DOC_DAT, DOC_PLACE,
+                                RELATION, POWER, DOC_END, DOC_CODE)
+            values (:FACE, :WORKER, 1, :V_NAME, :V_BASIS, :V_DUTY, :V_B_DATE, :V_E_DATE,
+                    :V_A_TYPE, :V_DOC_TYPE, :V_DOC_SER, :V_DOC_NUM, :V_DOC_DAT, :V_DOC_PLACE,
+                    :V_RELATION, :V_POWER, :V_DOC_END, :V_DOC_CODE)
+            returning ID into :ID;
 end^
 
 
@@ -265,14 +501,29 @@ CREATE OR ALTER PROCEDURE API_UPD_A_FACE (
 )
 AS
 begin
-    /* STUB: РЅРµ СЂРµР°Р»РёР·РѕРІР°РЅРѕ.
-       TODO: СЂР°Р·Р±РѕСЂ FIELDS РїРѕСЃС‚СЂРѕС‡РЅРѕ РїРѕ РѕР±СЂР°Р·С†Сѓ API_UPD_ACC, РїСЂРёРјРµРЅРµРЅРёРµ
-       Рє OD_A_FACES. B_DATE/E_DATE вЂ” РѕР±С‹С‡РЅС‹Рµ РїРѕР»СЏ, Р±РµР· РІРµСЂСЃРёРѕРЅРёСЂРѕРІР°РЅРёСЏ. */
+    /* STUB: не реализовано.
+       TODO: разбор FIELDS построчно по образцу API_UPD_ACC, применение
+       к OD_A_FACES. B_DATE/E_DATE — обычные поля, без версионирования. */
 end^
 
 
-/* ---------- AFFILIATE (Р°С„С„РёР»РёСЂРѕРІР°РЅРЅС‹Рµ Р»РёС†Р°, OD_AFFILS) ---------- */
+/* ---------- AFFILIATE (аффилированные лица, OD_AFFILS) ---------- */
 
+/* РЕАЛИЗОВАНО. Поиск аффилированного лица в OD_AFFILS по ключу
+   (CLIENT, FACE, RELATION). Возвращает ID записи либо NULL.
+
+   CLIENT   - ID лицевого счёта (OD_CLIENTS.ID); аффилированные висят на
+              ЛИЦЕВОМ СЧЁТЕ, не на лице.
+   FACE     - SELF_ID лица.
+   RELATION - вид связи. Из прикладного кода известно: 0 - владелец,
+              11 - оператор счёта депо, 12 - попечитель, 14 - учредитель
+              управления, 16 - залогодержатель (уполномоченное лицо).
+
+   Ключ не уникален: прикладной код допускает, что одно лицо включено в список
+   несколько раз (разные документы, полномочия, периоды). Датами поиск не
+   ограничивается; при нескольких записях возвращается самая поздняя (max ID).
+   Для RELATION = 0 запись, скорее всего, уже создана самой вставкой лицевого
+   счёта (триггеры OD_CLIENTS меняют OD_AFFILS) - тогда она и будет найдена. */
 CREATE OR ALTER PROCEDURE API_FIND_AFFIL (
     CLIENT INTEGER,
     FACE INTEGER,
@@ -283,14 +534,40 @@ RETURNS (
 )
 AS
 begin
-    /* STUB: РЅРµ СЂРµР°Р»РёР·РѕРІР°РЅРѕ.
-       TODO: select ID from OD_AFFILS
-             where CLIENT = :CLIENT and FACE = :FACE and RELATION = :RELATION */
     ID = null;
-    SUSPEND;
+    select max(ID) from OD_AFFILS
+     where CLIENT = :CLIENT and FACE = :FACE and RELATION = :RELATION
+      into :ID;
+    suspend;
 end^
 
 
+/* РЕАЛИЗОВАНО. Find-or-create аффилированного лица в OD_AFFILS.
+
+   Поля, обязательные в таблице, процедура заполняет САМА, сценарий их задавать
+   не обязан:
+     OPER      - оператор для CURRENT_USER из OD_OPERATORS, при его отсутствии
+                 SYSDBA (то же правило, что в API_FIND_CLIENT и в обвесе)
+     IUD       - 0
+     R_DATE    - current_timestamp
+     B_DATE    - из FIELDS, иначе начало времён (01.01.1900)
+     E_DATE    - из FIELDS, иначе конец времён (01.01.9999 - запись действует)
+     A_TYPE = 1, PERCENT_ = 0, POWER = 1, NUMERATOR = 1, DENOMINATOR = 1
+   FIELDS - B_DATE, E_DATE, A_TYPE, A_NUM, A_DATE, A_END, PERCENT_ (или PERCENT),
+   POWER, INCOME_ACC, INCOME_REC, INCOME_ADR, INCOME_VERBAL, NUMERATOR,
+   DENOMINATOR (даты в виде ГГГГ-ММ-ДД или ДД.ММ.ГГГГ). Остальные имена,
+   включая RELATION, игнорируются.
+
+   A_END по умолчанию остаётся NULL. Прикладной код для связей 11 и 12
+   (оператор, попечитель) отбирает только записи с A_END > даты договора, так
+   что без явного A_END такие записи там «не действуют» - задавайте A_END.
+   Для RELATION = 0 триггеры OD_AFFILS проверяют владельцев (исключения
+   OD_EX_CLIENTS_OWNERTYPE, OD_EX_CLIENTS_TWOOWNERS) - они сработают как есть.
+
+   Если запись уже есть (API_FIND_AFFIL), она не меняется - FIELDS игнорируются.
+   Поля идут сразу в INSERT, а не через API_UPD_AFFIL (она пока заглушка).
+   ID назначает триггер OD_AFFILS_BI из OD_AFFILS_ID_GEN, возвращаем его через
+   RETURNING. */
 CREATE OR ALTER PROCEDURE API_INS_AFFIL (
     CLIENT INTEGER,
     FACE INTEGER,
@@ -301,22 +578,82 @@ RETURNS (
     ID INTEGER
 )
 AS
+declare variable K integer;
+declare variable I integer;
+declare variable FIELD varchar(500);
+declare variable FLD varchar(64);
+declare variable VL varchar(255);
+declare variable V_OPER integer;
+declare variable V_B_DATE timestamp;
+declare variable V_E_DATE timestamp;
+declare variable V_A_TYPE integer;
+declare variable V_A_NUM varchar(64);
+declare variable V_A_DATE timestamp;
+declare variable V_A_END timestamp;
+declare variable V_PERCENT integer;
+declare variable V_POWER integer;
+declare variable V_INCOME_ACC integer;
+declare variable V_INCOME_REC varchar(255);
+declare variable V_INCOME_ADR varchar(255);
+declare variable V_INCOME_VERBAL varchar(255);
+declare variable V_NUMERATOR integer;
+declare variable V_DENOMINATOR integer;
 begin
-    /* STUB: РЅРµ СЂРµР°Р»РёР·РѕРІР°РЅРѕ.
-       TODO: find-or-create РїРѕ РѕР±СЂР°Р·С†Сѓ С‡РµСЂРЅРѕРІРёРєР° API_INS_CLIENT
-       (sql/draft_api_ins_client.sql).
-       Р’ OD_AFFILS РјРЅРѕРіРѕ NOT NULL-РїРѕР»РµР№, РєРѕС‚РѕСЂС‹Рµ РїСЂРѕС†РµРґСѓСЂР° РґРѕР»Р¶РЅР° Р·Р°РїРѕР»РЅСЏС‚СЊ
-       РЎРђРњРђ, Р° РЅРµ С‚СЂРµР±РѕРІР°С‚СЊ РѕС‚ СЃС†РµРЅР°СЂРёСЏ:
-         OPER      - С‡РµСЂРµР· CURRENT_USER -> OD_OPERATORS (РєР°Рє РІ С‡РµСЂРЅРѕРІРёРєРµ API_INS_CLIENT)
-         IUD       - 0 (СЃСЂ. РІСЃС‚Р°РІРєСѓ OD_CLIENTS_REC РІ OD_PR_INSERT_CLIENT)
-         R_DATE    - current_timestamp
-         B_DATE    - РёР· FIELDS, РёРЅР°С‡Рµ РЅР°С‡Р°Р»Рѕ РІСЂРµРјС‘РЅ
-         E_DATE    - РєРѕРЅРµС† РІСЂРµРјС‘РЅ
-         POWER, NUMERATOR, DENOMINATOR - СѓРјРѕР»С‡Р°РЅРёСЏ
-       РћСЃС‚Р°Р»СЊРЅРѕРµ РёР· FIELDS: A_TYPE, A_NUM, A_DATE, A_END, PERCENT_,
-       INCOME_ACC/REC/ADR/VERBAL, NUMERATOR/DENOMINATOR. */
     ID = null;
-    SUSPEND;
+    select ID from API_FIND_AFFIL(:CLIENT, :FACE, :RELATION) into :ID;
+    if (ID is null) then begin
+
+        V_B_DATE = cast('01.01.1900' as timestamp);
+        V_E_DATE = cast('01.01.9999' as timestamp);
+        V_A_TYPE = 1;  V_A_NUM = null;  V_A_DATE = null;  V_A_END = null;
+        V_PERCENT = 0;  V_POWER = 1;
+        V_INCOME_ACC = null;  V_INCOME_REC = null;  V_INCOME_ADR = null;  V_INCOME_VERBAL = null;
+        V_NUMERATOR = 1;  V_DENOMINATOR = 1;
+
+        /* Разбор FIELDS: пары ИМЯ=ЗНАЧЕНИЕ, разделённые переводом строки */
+        K = 1;
+        FIELD = f_LRTrim(f_Token(FIELDS, f_Chr(10), K));
+        while (f_IsBlank(FIELD) = 0) do begin
+            I = f_Pos('=', FIELD);
+            if (I > 1) then begin
+                FLD = f_RTrim(f_Left(FIELD, I - 1));
+                if (f_StrLen(FIELD) > I) then VL = f_LTrim(f_Copy(FIELD, I + 1, 255));
+                                         else VL = null;
+                if (f_IsBlank(VL) = 0) then begin
+                    if      (FLD = 'B_DATE')        then V_B_DATE        = cast(VL as timestamp);
+                    else if (FLD = 'E_DATE')        then V_E_DATE        = cast(VL as timestamp);
+                    else if (FLD = 'A_TYPE')        then V_A_TYPE        = f_AsInteger(VL);
+                    else if (FLD = 'A_NUM')         then V_A_NUM         = VL;
+                    else if (FLD = 'A_DATE')        then V_A_DATE        = cast(VL as timestamp);
+                    else if (FLD = 'A_END')         then V_A_END         = cast(VL as timestamp);
+                    else if (FLD = 'PERCENT_' or FLD = 'PERCENT') then V_PERCENT = f_AsInteger(VL);
+                    else if (FLD = 'POWER')         then V_POWER         = f_AsInteger(VL);
+                    else if (FLD = 'INCOME_ACC')    then V_INCOME_ACC    = f_AsInteger(VL);
+                    else if (FLD = 'INCOME_REC')    then V_INCOME_REC    = VL;
+                    else if (FLD = 'INCOME_ADR')    then V_INCOME_ADR    = VL;
+                    else if (FLD = 'INCOME_VERBAL') then V_INCOME_VERBAL = VL;
+                    else if (FLD = 'NUMERATOR')     then V_NUMERATOR     = f_AsInteger(VL);
+                    else if (FLD = 'DENOMINATOR')   then V_DENOMINATOR   = f_AsInteger(VL);
+                end
+            end
+            K = K + 1;
+            FIELD = f_LRTrim(f_Token(FIELDS, f_Chr(10), K));
+        end
+
+        select max(ID) from OD_OPERATORS where upper(USER_ID) = upper(CURRENT_USER) into :V_OPER;
+        if (V_OPER is null) then
+            select max(ID) from OD_OPERATORS where upper(USER_ID) = 'SYSDBA' into :V_OPER;
+
+        insert into OD_AFFILS (CLIENT, FACE, RELATION, B_DATE, E_DATE, OPER, IUD,
+                               A_TYPE, A_NUM, A_DATE, A_END, R_DATE, PERCENT_, POWER,
+                               INCOME_ACC, INCOME_REC, INCOME_ADR, INCOME_VERBAL,
+                               NUMERATOR, DENOMINATOR)
+            values (:CLIENT, :FACE, :RELATION, :V_B_DATE, :V_E_DATE, :V_OPER, 0,
+                    :V_A_TYPE, :V_A_NUM, :V_A_DATE, :V_A_END, current_timestamp, :V_PERCENT, :V_POWER,
+                    :V_INCOME_ACC, :V_INCOME_REC, :V_INCOME_ADR, :V_INCOME_VERBAL,
+                    :V_NUMERATOR, :V_DENOMINATOR)
+            returning ID into :ID;
+    end
 end^
 
 
@@ -326,8 +663,8 @@ CREATE OR ALTER PROCEDURE API_UPD_AFFIL (
 )
 AS
 begin
-    /* STUB: РЅРµ СЂРµР°Р»РёР·РѕРІР°РЅРѕ.
-       TODO: СЂР°Р·Р±РѕСЂ FIELDS РїРѕСЃС‚СЂРѕС‡РЅРѕ, РїСЂРёРјРµРЅРµРЅРёРµ Рє OD_AFFILS. */
+    /* STUB: не реализовано.
+       TODO: разбор FIELDS построчно, применение к OD_AFFILS. */
 end^
 
 SET TERM ; ^

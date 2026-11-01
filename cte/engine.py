@@ -2,9 +2,10 @@
 
 Верхнеуровневые блоки:
   - Первое появление алиаса -> FIND, если не нашли -> INS.
-  - Повтор алиаса у ИСТОРИЧЕСКОЙ сущности (face, share) требует as_of и
-    вызывает UPD(SELF_ID, as_of, FIELDS); даты as_of строго возрастают.
-  - Повтор алиаса у ПЛОСКОЙ сущности (bank_account, client, bank) запрещает
+  - Повтор алиаса у ИСТОРИЧЕСКОЙ сущности (face, share, bank) требует as_of и
+    вызывает UPD(SELF_ID, as_of, FIELDS); даты as_of строго возрастают. У bank
+    версионируется только часть «лицо», запись OD_BANKS перезаписывается.
+  - Повтор алиаса у ПЛОСКОЙ сущности (bank_account, client) запрещает
     as_of и вызывает UPD(ID, FIELDS) на месте.
   - Если процедура создания вернула NULL — ошибка выполнения сразу.
 
@@ -30,11 +31,9 @@ BEGINNING_OF_TIME = "1900-01-01"
 # Для безключевых детей возвращаемого значения нет, поэтому молчаливый no-op
 # иначе никак не обнаружить — предупреждаем явно.
 STUB_PROCS = {
-    "API_SET_P_FACE",
-    "API_FIND_BANK", "API_INS_BANK", "API_UPD_BANK",
     "API_UPD_CLIENT",
-    "API_FIND_A_FACE", "API_INS_A_FACE", "API_UPD_A_FACE",
-    "API_FIND_AFFIL", "API_INS_AFFIL", "API_UPD_AFFIL",
+    "API_UPD_A_FACE",
+    "API_UPD_AFFIL",
 }
 
 
@@ -46,7 +45,7 @@ REQUIRED_PROCS = {
     "share": (("API_FIND_SHARE", "API_INS_SHARE"), ("API_UPD_SHARE",)),
     "bank_account": (("API_FIND_ACC", "API_INS_ACC"), ("API_UPD_ACC",)),
     "client": (("API_FIND_CLIENT", "OD_PR_INSERT_CLIENT"), ("API_UPD_CLIENT",)),
-    "bank": (("API_FIND_BANK", "API_INS_BANK"), ("API_UPD_BANK",)),
+    "bank": (("API_FIND_BANK", "API_FIND_FACE", "API_INS_FACE", "API_SET_BANK"), ("API_UPD_FACE",)),
     "code": (("API_SET_FC_CODE",), ()),
     "activity": (("API_SET_P_FACE",), ()),
     "attorney": (("API_FIND_A_FACE", "API_INS_A_FACE"), ("API_UPD_A_FACE",)),
@@ -509,21 +508,100 @@ class ClientHandler(Handler):
 
 
 class BankHandler(Handler):
-    historical = False
+    """Банк — обычное юрлицо (OD_FACES + OD_U_FACES) плюс запись OD_BANKS.
+
+    Поля блока делятся на два слоя:
+      - ЛИЦО (всё, кроме BANK_FIELDS): ведётся платформенными API_FIND_FACE /
+        API_INS_FACE / API_UPD_FACE так же, как `face: juridical`, и
+        ВЕРСИОНИРУЕТСЯ — повтор блока с as_of создаёт историческую версию лица;
+      - БАНК (BANK_FIELDS): плоская запись OD_BANKS (PK U_FACE = SELF_ID лица),
+        пишется API_SET_BANK; при повторе поля перезаписываются без истории.
+    Алиас хранит SELF_ID лица.
+
+    Создание: сначала поиск готового банка по BIC, затем по SWIFT
+    (API_FIND_BANK); BIC не обязателен, банк может быть и без него. Не нашли —
+    ищем обычное лицо (API_FIND_FACE по INN/NAME/MNEM/...): найденное лицо
+    становится банком, ему дописывается запись OD_BANKS. Нет и лица — создаём
+    (для этого нужен NAME) и дописываем запись OD_BANKS.
+
+    Умолчания при СОЗДАНИИ лица, если поле в блоке не задано: S_TYPE=1 (юрлицо;
+    его обеспечивает сам IS_JURIC=1 у API_INS_FACE), STATE=643, FS=16 (частная
+    собственность). Заданное в блоке пишется как есть, в том числе другое FS.
+    При повторе блока умолчания не применяются.
+
+    Вложенный блок у банка один - activity (лицензии и виды деятельности лица,
+    например `activity: bank`); он работает так же, как у face.
+    """
+
+    historical = True
+
+    # поля записи OD_BANKS; всё остальное уходит в платформенные API_*_FACE
+    BANK_FIELDS = ("BIC", "KORR", "CITY", "SWIFT", "REG_NUM", "IS_INSURANCE")
+    CREATE_DEFAULTS = (("STATE", "643"), ("FS", "16"))
+
+    @staticmethod
+    def _check_s_type(engine: Engine, block: Block) -> None:
+        # S_TYPE у лица ставится при создании (IS_JURIC) и API_UPD_FACE его не
+        # меняет, поэтому записать иное значение невозможно — не молчим
+        fv = block.get("S_TYPE")
+        if fv is not None and engine.resolve_value(fv, block).strip() != "1":
+            raise DslError(
+                "bank: банк всегда юридическое лицо, S_TYPE может быть только 1",
+                block.file, block.line,
+            )
+
+    def _split(self, block: Block):
+        """(поля лица, поля банка) без as_of и S_TYPE."""
+        face, bank = [], []
+        for fv in block.without("as_of", "S_TYPE"):
+            (bank if fv.name in self.BANK_FIELDS else face).append(fv)
+        return face, bank
 
     def create(self, engine: Engine, block: Block) -> Optional[int]:
-        bic = engine.field_value(block, "BIC", required=True)
-        fields_text = engine.fields_to_text(block.without("as_of", "BIC"), block)
-        result = engine.call("API_FIND_BANK", [bic], block)
-        bank_id = result[0]
-        if bank_id is None:
-            result = engine.call("API_INS_BANK", [bic, fields_text], block)
-            return result[0]
-        return bank_id
+        self._check_s_type(engine, block)
+        face_fields, bank_fields = self._split(block)
+        face_text = engine.fields_to_text(face_fields, block)
+        bank_text = engine.fields_to_text(bank_fields, block)
 
-    def _update_flat(self, engine: Engine, block: Block, state: AliasState) -> None:
-        fields_text = engine.fields_to_text(block.without("as_of", "BIC"), block)
-        engine.call("API_UPD_BANK", [state.id, fields_text], block)
+        bic = engine.field_value(block, "BIC")
+        swift = engine.field_value(block, "SWIFT")
+        if bic or swift:
+            found = engine.call("API_FIND_BANK", [bic, swift], block)[0]
+            if found is not None:
+                return found
+
+        face_id = engine.find_one("API_FIND_FACE", [face_text], block, "bank")
+        if face_id is None:
+            if block.get("NAME") is None:
+                raise DslError(
+                    "bank: банк не найден, а для создания лица нужно поле NAME",
+                    block.file, block.line,
+                )
+            given = {fv.name for fv in face_fields}
+            lines = [face_text] if face_text else []
+            lines += [f"{n}={v}" for n, v in self.CREATE_DEFAULTS if n not in given]
+            result = engine.call(
+                "API_INS_FACE", [1, BEGINNING_OF_TIME, "\n".join(lines)], block
+            )
+            face_id = result[0]
+            if face_id is None:
+                return None
+        engine.call("API_SET_BANK", [face_id, bank_text], block)
+        return face_id
+
+    def _update_historical(self, engine: Engine, block: Block, state: AliasState, as_of: str) -> None:
+        self._check_s_type(engine, block)
+        face_fields, bank_fields = self._split(block)
+        if face_fields:
+            engine.call(
+                "API_UPD_FACE",
+                [state.id, as_of, engine.fields_to_text(face_fields, block)],
+                block,
+            )
+        if bank_fields:
+            engine.call(
+                "API_SET_BANK", [state.id, engine.fields_to_text(bank_fields, block)], block
+            )
 
 
 # ---------------------------- обработчики детей ----------------------------

@@ -96,10 +96,12 @@ class DryRunDatabase(FakeDatabase):
     """База по умолчанию для `cte --dry-run`.
 
     Имитирует пустую БД: FIND всегда "не найдено", INS уже реализованных
-    процедур (API_INS_FACE/API_INS_SHARE/API_INS_ACC/API_INS_CLIENT) выдаёт
-    правдоподобный автоинкрементный ID, а процедуры-заглушки (см.
-    sql/api_stubs_test_env.sql — сейчас это BANK целиком и API_UPD_CLIENT)
-    честно возвращают NULL, как они и делают на реальном стенде. Так
+    процедур (API_INS_FACE/API_INS_SHARE/API_INS_ACC/API_INS_A_FACE/
+    API_INS_AFFIL и вставка клиента) выдаёт правдоподобный автоинкрементный
+    ID, а процедуры-заглушки (см. sql/api_stubs_test_env.sql — сейчас это
+    API_UPD_CLIENT/API_UPD_A_FACE/API_UPD_AFFIL) честно возвращают NULL, как
+    они и делают на реальном стенде. SET-процедуры (API_SET_*) ID не отдают и
+    тоже отвечают пустым кортежем. Так
     дефолтный dry-run сразу показывает, какая часть сценария уже рабочая,
     а какая упирается в нереализованные процедуры — без ручного скриптинга
     ответов, которое нужно для точечных unit-тестов (см. FakeDatabase).
@@ -107,6 +109,7 @@ class DryRunDatabase(FakeDatabase):
 
     _IMPLEMENTED_INS = {
         "API_INS_FACE", "API_INS_SHARE", "API_INS_ACC", "OD_PR_INSERT_CLIENT",
+        "API_INS_A_FACE", "API_INS_AFFIL",
     }
 
     def __init__(self):
@@ -133,7 +136,7 @@ class DryRunDatabase(FakeDatabase):
                 self._created[self._last_find] = new_id
                 self._last_find = None
             return (new_id,)
-        # заглушки (API_INS_BANK, API_UPD_CLIENT, API_UPD_BANK, ...) — no-op
+        # заглушки (API_UPD_CLIENT, ...) и SET-процедуры (API_SET_BANK, ...) — no-op
         return (None, None)
 
 

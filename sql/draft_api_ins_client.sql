@@ -1,39 +1,40 @@
 /* ============================================================================
-   Р§Р•Р РќРћР’РРљ API_INS_CLIENT вЂ” РќР• РќРђРљРђРўР«Р’РђРўР¬ РЅР° СЃС‚РµРЅРґ, РѕР±РІРµСЃРѕРј РЅРµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ.
+   ЧЕРНОВИК API_INS_CLIENT — НЕ НАКАТЫВАТЬ на стенд, обвесом не используется.
 
-   РџСЂРѕС†РµРґСѓСЂС‹ API_INS_CLIENT РІ РїР»Р°С‚С„РѕСЂРјРµ РЅРµС‚. РћР±РІРµСЃ РІСЃС‚Р°РІР»СЏРµС‚ Р»РёС†РµРІРѕР№ СЃС‡С‘С‚
-   РїСЂСЏРјС‹Рј РІС‹Р·РѕРІРѕРј OD_PR_INSERT_CLIENT (cte/engine.py, ClientHandler), РїРѕСЌС‚РѕРјСѓ
-   РІ sql/api_stubs_test_env.sql СЌС‚Р° РїСЂРѕС†РµРґСѓСЂР° РЅРµ СЃРѕР·РґР°С‘С‚СЃСЏ. Р—РґРµСЃСЊ СЃРѕС…СЂР°РЅРµРЅР°
-   Р·Р°РіРѕС‚РѕРІРєР° РЅР° СЃР»СѓС‡Р°Р№, РєРѕРіРґР° API_INS_CLIENT РІСЃС‘-С‚Р°РєРё РїРѕРЅР°РґРѕР±РёС‚СЃСЏ.
+   Процедуры API_INS_CLIENT в платформе нет. Обвес вставляет лицевой счёт
+   прямым вызовом OD_PR_INSERT_CLIENT (cte/engine.py, ClientHandler), поэтому
+   в sql/api_stubs_test_env.sql эта процедура не создаётся. Здесь сохранена
+   заготовка на случай, когда API_INS_CLIENT всё-таки понадобится.
 
-   РџРµСЂРµРґ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµРј СЃРІРµСЂРёС‚СЊ Р·РЅР°С‡РµРЅРёСЏ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ СЃ РґРІРёР¶РєРѕРј: Р·РґРµСЃСЊ
-   IS_TERM='0', IS_MANAGER=0, IS_VOICE=0, RELATION=NULL, Р° РґРІРёР¶РѕРє
-   (ClientHandler.INSERT_PARAMS) РїРѕРІС‚РѕСЂСЏРµС‚ DEFAULT-С‹ OD_CLIENTS:
+   Перед использованием сверить значения по умолчанию с движком: здесь
+   IS_TERM='0', IS_MANAGER=0, IS_VOICE=0, RELATION=NULL, а движок
+   (ClientHandler.INSERT_PARAMS) повторяет DEFAULT-ы OD_CLIENTS:
    IS_TERM='T', IS_MANAGER=1, IS_VOICE=1, RELATION=0.
-   Р—Р°РІРёСЃРёС‚ РѕС‚ API_FIND_CLIENT (Fansy-Foundation/dBase/proc.sql).
+   Зависит от API_FIND_CLIENT (Fansy-Foundation/dBase/proc.sql).
    ============================================================================ */
 
 SET TERM ^ ;
-/* Р Р•РђР›РР—РћР’РђРќРћ (РЅРµ Р·Р°РіР»СѓС€РєР°) вЂ” РІСЃС‚Р°РІРєР° РґРµР»РµРіРёСЂРѕРІР°РЅР° РІ СЃСѓС‰РµСЃС‚РІСѓСЋС‰СѓСЋ
-   РїР»Р°С‚С„РѕСЂРјРµРЅРЅСѓСЋ OD_PR_INSERT_CLIENT (Fansy-Foundation/dBase/proc.sql),
-   РїРѕ СѓРєР°Р·Р°РЅРёСЋ: РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ РµС‘ РґР»СЏ Р»РёС†РµРІРѕРіРѕ СЃС‡С‘С‚Р°, "РїРѕ РєСЂР°Р№РЅРµР№ РјРµСЂРµ РїРѕРєР°".
 
-   РЎРёРіРЅР°С‚СѓСЂР° СЃРѕРіР»Р°СЃРѕРІР°РЅР° СЃ API_FIND_CLIENT: РєР»СЋС‡РµРІС‹Рµ РІРµС‰Рё (NUMBER, FACE,
-   SUBTYPE) вЂ” СЏРІРЅС‹Рµ РїР°СЂР°РјРµС‚СЂС‹, РѕСЃС‚Р°Р»СЊРЅРѕРµ РІ FIELDS. PLAN_ID Р±РµСЂС‘С‚СЃСЏ РёР· FIELDS,
-   Р° РµСЃР»Рё РЅРµ Р·Р°РґР°РЅ вЂ” РёР· OD_OPERATORS РїРѕ С‚РµРєСѓС‰РµРјСѓ РїРѕР»СЊР·РѕРІР°С‚РµР»СЋ, С‚РµРј Р¶Рµ
-   РїСЂР°РІРёР»РѕРј, С‡С‚Рѕ РІ API_FIND_CLIENT (РёРЅР°С‡Рµ РїРѕРёСЃРє Рё РІСЃС‚Р°РІРєР° РјРѕРіР»Рё Р±С‹ РїРѕРїР°СЃС‚СЊ
-   РІ СЂР°Р·РЅС‹Рµ РїР»Р°РЅС‹ СЃС‡РµС‚РѕРІ).
+/* РЕАЛИЗОВАНО (не заглушка) — вставка делегирована в существующую
+   платформенную OD_PR_INSERT_CLIENT (Fansy-Foundation/dBase/proc.sql),
+   по указанию: использовать её для лицевого счёта, "по крайней мере пока".
 
-   РР· FIELDS СЃРµР№С‡Р°СЃ СЂР°Р·Р±РёСЂР°СЋС‚СЃСЏ NAME, PLAN_ID, ISSUER, STATE вЂ” РѕСЃС‚Р°Р»СЊРЅС‹Рµ
-   РїР°СЂР°РјРµС‚СЂС‹ OD_PR_INSERT_CLIENT (LINK_NUMBER, INCOME_*, O_MAIL_*, I_MAIL_*,
-   DD_DATE/DD_NUM, TARIF, EXTRA_*, IS_*-С„Р»Р°РіРё) РїРµСЂРµРґР°СЋС‚СЃСЏ NULL/СѓРјРѕР»С‡Р°РЅРёСЏРјРё.
-   TODO: СЂР°СЃС€РёСЂСЏС‚СЊ РїРѕ РјРµСЂРµ РЅР°РґРѕР±РЅРѕСЃС‚Рё СЃС†РµРЅР°СЂРёРµРІ вЂ” СЃР°РјР° OD_PR_INSERT_CLIENT
-   РїРѕРґСЃС‚Р°РІР»СЏРµС‚ Р±РµР·РѕРїР°СЃРЅС‹Рµ Р·РЅР°С‡РµРЅРёСЏ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ РґР»СЏ NULL.
+   Сигнатура согласована с API_FIND_CLIENT: ключевые вещи (NUMBER, FACE,
+   SUBTYPE) — явные параметры, остальное в FIELDS. PLAN_ID берётся из FIELDS,
+   а если не задан — из OD_OPERATORS по текущему пользователю, тем же
+   правилом, что в API_FIND_CLIENT (иначе поиск и вставка могли бы попасть
+   в разные планы счетов).
 
-   TYPE_ Р¶С‘СЃС‚РєРѕ = 2 вЂ” РєРѕРЅРІРµРЅС†РёСЏ, СѓРЅР°СЃР»РµРґРѕРІР°РЅРЅР°СЏ РѕС‚ РїСЂРёРєР»Р°РґРЅРѕРіРѕ СЃР»РѕСЏ
-   ups_client_t (СЃРј. Fansy-Foundation/fansy_conventions.md);
-   OD_PR_INSERT_CLIENT.TYPE_ РІР»РёСЏРµС‚ РЅР° С‚Рѕ, СЃРѕР·РґР°С‘С‚СЃСЏ Р»Рё OD_CLIENTS_REC (С‚РѕР»СЊРєРѕ РїСЂРё TYPE_<=3),
-   РїРѕСЌС‚РѕРјСѓ С‚СЂРѕРіР°С‚СЊ СЌС‚Рѕ Р·РЅР°С‡РµРЅРёРµ РЅРµ РЅР°РѕР±СѓРј. */
+   Из FIELDS сейчас разбираются NAME, PLAN_ID, ISSUER, STATE — остальные
+   параметры OD_PR_INSERT_CLIENT (LINK_NUMBER, INCOME_*, O_MAIL_*, I_MAIL_*,
+   DD_DATE/DD_NUM, TARIF, EXTRA_*, IS_*-флаги) передаются NULL/умолчаниями.
+   TODO: расширять по мере надобности сценариев — сама OD_PR_INSERT_CLIENT
+   подставляет безопасные значения по умолчанию для NULL.
+
+   TYPE_ жёстко = 2 — конвенция, унаследованная от прикладного слоя
+   ups_client_t (см. Fansy-Foundation/fansy_conventions.md);
+   OD_PR_INSERT_CLIENT.TYPE_ влияет на то, создаётся ли OD_CLIENTS_REC (только при TYPE_<=3),
+   поэтому трогать это значение не наобум. */
 CREATE OR ALTER PROCEDURE API_INS_CLIENT (
     "NUMBER" VARCHAR(128),
     FACE INTEGER,
@@ -59,9 +60,9 @@ begin
         if (PLAN_ID is null) then
             select o.PLAN_ID from OD_OPERATORS o
              where upper(o.USER_ID) = upper(CURRENT_USER) into :PLAN_ID;
-        /* PLAN_ID NOT NULL РІ OD_CLIENTS вЂ” РµСЃР»Рё РїР»Р°РЅ РЅРµ РѕРїСЂРµРґРµР»РёР»СЃСЏ, insert
-           РЅРёР¶Рµ СѓРїР°РґС‘С‚ РїРѕ constraint, СЌС‚Рѕ РѕСЃРѕР·РЅР°РЅРЅРѕ (РіСЂРѕРјРєР°СЏ РѕС€РёР±РєР° РІРјРµСЃС‚Рѕ
-           С‚РёС…РѕРіРѕ РјСѓСЃРѕСЂР°) */
+        /* PLAN_ID NOT NULL в OD_CLIENTS — если план не определился, insert
+           ниже упадёт по constraint, это осознанно (громкая ошибка вместо
+           тихого мусора) */
 
         select VAL from PR_LIST_VAL(:FIELDS, 'ISSUER') into :ISSUER;
         select VAL from PR_LIST_VAL(:FIELDS, 'STATE') into :V_STATE;
@@ -74,9 +75,9 @@ begin
         select VAL from PR_LIST_VAL(:FIELDS, 'NAME') into :V_NAME;
 
         execute procedure OD_PR_INSERT_CLIENT (
-            null,           /* ID: СЃРіРµРЅРµСЂРёСЂРѕРІР°С‚СЊ СЃР°РјР° (OD_CLIENTS_ID_GEN) */
+            null,           /* ID: сгенерировать сама (OD_CLIENTS_ID_GEN) */
             :"NUMBER",
-            2,              /* TYPE_ = 2, РєРѕРЅРІРµРЅС†РёСЏ */
+            2,              /* TYPE_ = 2, конвенция */
             :SUBTYPE,
             :FACE,
             null,           /* RELATION */
@@ -87,7 +88,7 @@ begin
             0,              /* IS_SOV */
             0,              /* IS_NZ */
             0,              /* IS_BCLIENT */
-            :V_STATE,       /* STATE (РёР· FIELDS, РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ 0 вЂ” РѕС‚РєСЂС‹С‚) */
+            :V_STATE,       /* STATE (из FIELDS, по умолчанию 0 — открыт) */
             current_timestamp, null,  /* D_OPEN, D_CLOSE */
             null,           /* Z_DATE */
             :OPER,

@@ -60,8 +60,8 @@ client &c: owner
         with self.assertRaisesRegex(DslError, "не имеет вложенных"):
             parse_text(
                 """
-bank &sber
-  BIC=044525225
+bank_account &acc
+  ACNT=40817810900000012345
   code: nsd
     CODE=1
 """
@@ -184,8 +184,9 @@ face &ivanov: individual
                 FACE_OK,
             )
 
-    def test_attorney_stub_returning_null_errors(self):
-        # API_FIND_A_FACE / API_INS_A_FACE — заглушки, оба отдают None
+    def test_attorney_returning_null_errors(self):
+        # FIND и INS не вернули ID (на стенде так отвечает заглушка или
+        # процедура, которой нечем идентифицировать уполномоченного)
         with self.assertRaisesRegex(DslError, "создание 'attorney' не удалось"):
             run(
                 """
@@ -282,6 +283,14 @@ face &ivanov: individual
         self.assertEqual(calls[0][1][0], 1)  # тот же SELF_ID
 
     def test_stub_warnings_collected(self):
+        # API_UPD_CLIENT - заглушка: вызов должен попасть в предупреждения
+        engine = Engine(FakeDatabase())
+        engine.call("API_UPD_CLIENT", [1, ""])
+        self.assertTrue(any("API_UPD_CLIENT" in w for w in engine.warnings))
+
+    def test_implemented_children_procs_do_not_warn(self):
+        # API_SET_P_FACE реализована в sql/api_stubs_test_env.sql —
+        # предупреждения «заглушка» быть не должно
         engine, db = run(
             """
 face &nrd: juridical
@@ -290,7 +299,7 @@ face &nrd: juridical
 """,
             FACE_OK,
         )
-        self.assertTrue(any("API_SET_P_FACE" in w for w in engine.warnings))
+        self.assertFalse(any("API_SET_P_FACE" in w for w in engine.warnings))
 
 
 if __name__ == "__main__":

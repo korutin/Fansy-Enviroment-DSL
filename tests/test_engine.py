@@ -84,15 +84,18 @@ share &gazp: stock
 """
             )
 
-    def test_reference_to_stub_entity_without_id_errors(self):
+    def test_creation_returning_null_errors(self):
+        # лицо банка не создалось (API_INS_FACE вернула NULL) - явная ошибка
         scripted = {
             "API_FIND_BANK": [(None,)],
-            "API_INS_BANK": [(None,)],
+            "API_FIND_FACE": [(None, None)],
+            "API_INS_FACE": [(None,)],
         }
         with self.assertRaisesRegex(DslError, "создание 'bank' не удалось"):
             run(
                 """
 bank &sber
+  NAME=Сбербанк
   BIC=044525225
 """,
                 scripted,
