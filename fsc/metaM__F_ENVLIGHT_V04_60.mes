@@ -1,0 +1,1946 @@
+!MESS_TYPE!=DICFORMS
+!TIMESTAMP!=01.11.2026 18:25:24
+990000\DICFORMS.AUTO_OPEN=0
+990000\DICFORMS.AUTO_START=0
+990000\DICFORMS.FCAPTION=Модуль выгрузки объектов в формат env-light
+990000\DICFORMS.FCLASS=T_COND_BODY_F
+990000\DICFORMS.FIN_ACTION.COUNT=0
+990000\DICFORMS.FTYPE=_F_ENVLIGHT
+990000\DICFORMS.INI_ACTION.COUNT=0
+990000\DICFORMS.LISTED=0
+990000\DICFORMS.MD5_HASH=d41d8cd98f00b204e9800998ecf8427e
+990000\DICFORMS.MD5_STAMP=01.11.2026
+990000\DICFORMS.MODAL=0
+990000\DICFORMS.MULTIPLE=0
+990000\DICFORMS.NODEBUG=0
+990000\DICFORMS.PROFILE=-1
+990000\DICFORMS.VISIBLE=1
+990000\DICFORMS.Приложения=STANDARD;BALANCE;DEPO;BALTUN;DEPONENT;SPECTRE;REESTR;AGENT;TRUST;
+990000\DICFORMS.Функции=990001;990002;990003;990004;990005;990006;990007;990008;990009;990010;990011;990012;990013;990014;990015;990016;990017;990018;990019;990020;990021;990022;990023;990024;990025;990026;990027;990028;990029;990030;990031;990032;990033;990034;990035;990036;990037;990038;990039;990040;990041;990042;990043;990044
+990001\DICMETAF.FORM_NUM=990000
+990001\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990001\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->add_face_seed( %queue:LargeInt; %id )
+990001\DICMETAF.FUNC_BODY.02=   -----------------------------------------------------------------------------
+990001\DICMETAF.FUNC_BODY.03=   Добавить лицо в очередь обхода (по SELF_ID), если оно есть и не добавлено.
+990001\DICMETAF.FUNC_BODY.05=   Параметры:
+990001\DICMETAF.FUNC_BODY.06=     %queue - дескриптор очереди лиц (L.self);
+990001\DICMETAF.FUNC_BODY.07=     %id    - ID лица (OD_FACES.ID или SELF_ID); пустое пропускается.
+990001\DICMETAF.FUNC_BODY.08=   ----------------------------------------------------------------------------- */
+990001\DICMETAF.FUNC_BODY.09=var v_self;
+990001\DICMETAF.FUNC_BODY.10=v_self := _F_ENVLIGHT->ref_self(%id);
+990001\DICMETAF.FUNC_BODY.11=if ~IsBlank(v_self) then
+990001\DICMETAF.FUNC_BODY.12=    _F_ENVLIGHT->add_uniq(%queue, v_self);
+990001\DICMETAF.FUNC_BODY.13=end
+990001\DICMETAF.FUNC_BODY.COUNT=14
+990001\DICMETAF.FUNC_HEADER.0=add_face_seed( %queue:LargeInt; %id )
+990001\DICMETAF.FUNC_HEADER.COUNT=1
+990001\DICMETAF.FUNC_ID=add_face_seed
+990001\DICMETAF.IS_CANON=0
+990001\DICMETAF.IS_USER=1
+990001\DICMETAF.MD5_HASH=b5d4744624a0221903bd3f7cc1c4f758
+990001\DICMETAF.MD5_STAMP=01.11.2026
+990002\DICMETAF.FORM_NUM=990000
+990002\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990002\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->add_uniq( %lst:LargeInt; %value )
+990002\DICMETAF.FUNC_BODY.02=   -----------------------------------------------------------------------------
+990002\DICMETAF.FUNC_BODY.03=   Добавить значение в список строкой, если его там ещё нет. Пустое значение
+990002\DICMETAF.FUNC_BODY.04=   пропускается.
+990002\DICMETAF.FUNC_BODY.06=   Параметры:
+990002\DICMETAF.FUNC_BODY.07=     %lst   - дескриптор списка (L.self);
+990002\DICMETAF.FUNC_BODY.08=     %value - добавляемое значение (число или строка).
+990002\DICMETAF.FUNC_BODY.09=   ----------------------------------------------------------------------------- */
+990002\DICMETAF.FUNC_BODY.10=var v_val;
+990002\DICMETAF.FUNC_BODY.11=if ~IsBlank(%value) then
+990002\DICMETAF.FUNC_BODY.12=    v_val := Trim(Str(%value));
+990002\DICMETAF.FUNC_BODY.13=    if _F_ENVLIGHT->has(%lst, v_val) = 0 then
+990002\DICMETAF.FUNC_BODY.14=        ListAdd(%lst, v_val);
+990002\DICMETAF.FUNC_BODY.15=    end;
+990002\DICMETAF.FUNC_BODY.16=end
+990002\DICMETAF.FUNC_BODY.COUNT=17
+990002\DICMETAF.FUNC_HEADER.0=add_uniq( %lst:LargeInt; %value )
+990002\DICMETAF.FUNC_HEADER.COUNT=1
+990002\DICMETAF.FUNC_ID=add_uniq
+990002\DICMETAF.IS_CANON=0
+990002\DICMETAF.IS_USER=1
+990002\DICMETAF.MD5_HASH=6560b8d9687623bda7a4271c30c7ee13
+990002\DICMETAF.MD5_STAMP=01.11.2026
+990003\DICMETAF.FORM_NUM=990000
+990003\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990003\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->deps_ready( %seen:LargeInt; %efrom:LargeInt; %eto:LargeInt;
+990003\DICMETAF.FUNC_BODY.02=      %id:Int ):Int
+990003\DICMETAF.FUNC_BODY.03=   -----------------------------------------------------------------------------
+990003\DICMETAF.FUNC_BODY.04=   Выгружены ли уже все лица, на которые ссылается лицо %id.
+990003\DICMETAF.FUNC_BODY.06=   Параметры:
+990003\DICMETAF.FUNC_BODY.07=     %seen        - список выгруженных объектов (ключи F<SELF_ID>);
+990003\DICMETAF.FUNC_BODY.08=     %efrom, %eto - списки рёбер графа ссылок;
+990003\DICMETAF.FUNC_BODY.09=     %id          - SELF_ID проверяемого лица.
+990003\DICMETAF.FUNC_BODY.10=   Возврат: 1 - все зависимости выгружены, 0 - есть невыгруженные.
+990003\DICMETAF.FUNC_BODY.11=   ----------------------------------------------------------------------------- */
+990003\DICMETAF.FUNC_BODY.12=var v_k, v_n, v_id;
+990003\DICMETAF.FUNC_BODY.13=v_id := Trim(Str(%id));
+990003\DICMETAF.FUNC_BODY.14=v_n := ListCount(%efrom);
+990003\DICMETAF.FUNC_BODY.15=v_k := 0;
+990003\DICMETAF.FUNC_BODY.16=while v_k < v_n do
+990003\DICMETAF.FUNC_BODY.17=    if ListGet(%efrom, v_k) = v_id then
+990003\DICMETAF.FUNC_BODY.18=        if _F_ENVLIGHT->has(%seen, 'F' + ListGet(%eto, v_k)) = 0 then
+990003\DICMETAF.FUNC_BODY.19=            return(0);
+990003\DICMETAF.FUNC_BODY.20=        end;
+990003\DICMETAF.FUNC_BODY.21=    end;
+990003\DICMETAF.FUNC_BODY.22=    v_k := v_k + 1;
+990003\DICMETAF.FUNC_BODY.23=end;
+990003\DICMETAF.FUNC_BODY.24=1
+990003\DICMETAF.FUNC_BODY.COUNT=25
+990003\DICMETAF.FUNC_HEADER.0=deps_ready( %seen:LargeInt; %efrom:LargeInt; %eto:LargeInt;
+990003\DICMETAF.FUNC_HEADER.1=   %id:Int ):Int
+990003\DICMETAF.FUNC_HEADER.COUNT=2
+990003\DICMETAF.FUNC_ID=deps_ready
+990003\DICMETAF.IS_CANON=0
+990003\DICMETAF.IS_USER=1
+990003\DICMETAF.MD5_HASH=899eccfa5e7f6ae3089ec1e0de10cff8
+990003\DICMETAF.MD5_STAMP=01.11.2026
+990004\DICMETAF.FORM_NUM=990000
+990004\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990004\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->export_client( %client:Int ):Str
+990004\DICMETAF.FUNC_BODY.02=   -----------------------------------------------------------------------------
+990004\DICMETAF.FUNC_BODY.03=   Сериализовать лицевой счёт (client) в формат env-light.
+990004\DICMETAF.FUNC_BODY.05=   Выгружается: лица, на которые ссылается счёт (владелец FACE, эмитент
+990004\DICMETAF.FUNC_BODY.06=   ISSUER, INCOME_FACE, лица аффилированных, владельцы и площадки банковских
+990004\DICMETAF.FUNC_BODY.07=   счетов) вместе с лицами, на которые ссылаются они; банковские счета,
+990004\DICMETAF.FUNC_BODY.08=   привязанные к лицевому счёту (INCOME_ACC текущей записи реквизитов и
+990004\DICMETAF.FUNC_BODY.09=   аффилированных); лица-банки этих счетов блоками bank; сам счёт блоком client
+990004\DICMETAF.FUNC_BODY.10=   с вложенными affiliate. Порядок: лица и банки, банковские счета, счёт.
+990004\DICMETAF.FUNC_BODY.12=   Ошибки обращения к БД не перехватываются.
+990004\DICMETAF.FUNC_BODY.14=   Параметры: %client - OD_CLIENTS.ID лицевого счёта.
+990004\DICMETAF.FUNC_BODY.15=   Возврат: текст сценария env-light (строки через CR LF).
+990004\DICMETAF.FUNC_BODY.16=   ----------------------------------------------------------------------------- */
+990004\DICMETAF.FUNC_BODY.17=var FACE, ISSUER, INCOME_FACE, INCOME_ACC, AFF_FACE, AFF_ACC, ACC_FACE, ACC_MARKET, ACC_BANK;
+990004\DICMETAF.FUNC_BODY.18=var v_lines, v_seen, v_queue, v_efrom, v_eto, v_accs, v_exists, v_i;
+990004\DICMETAF.FUNC_BODY.19=v_lines := List();
+990004\DICMETAF.FUNC_BODY.20=v_seen := List();
+990004\DICMETAF.FUNC_BODY.21=v_queue := List();
+990004\DICMETAF.FUNC_BODY.22=v_efrom := List();
+990004\DICMETAF.FUNC_BODY.23=v_eto := List();
+990004\DICMETAF.FUNC_BODY.24=v_accs := List();
+990004\DICMETAF.FUNC_BODY.25=v_exists := Extract('Данные', [select count(*) from OD_CLIENTS where ID = :ID], %client);
+990004\DICMETAF.FUNC_BODY.26=if v_exists = 0 then
+990004\DICMETAF.FUNC_BODY.27=    ListAdd(v_lines, '# env-light: лицевой счёт ID=' + Trim(Str(%client)) + ' не найден');
+990004\DICMETAF.FUNC_BODY.28=else
+990004\DICMETAF.FUNC_BODY.29=    ListAdd(v_lines, '# env-light: выгрузка лицевого счёта ID=' + Trim(Str(%client)));
+990004\DICMETAF.FUNC_BODY.30=    /* лица и банковские счета, на которые ссылается счёт */
+990004\DICMETAF.FUNC_BODY.31=    for 'Данные' select [select C.FACE, C.ISSUER, R.INCOME_FACE, R.INCOME_ACC
+990004\DICMETAF.FUNC_BODY.32=                         from OD_CLIENTS C
+990004\DICMETAF.FUNC_BODY.33=                              left join OD_CLIENTS_REC R on R.CLIENT = C.ID
+990004\DICMETAF.FUNC_BODY.34=                                   and R.B_DATE = (select max(R2.B_DATE) from OD_CLIENTS_REC R2
+990004\DICMETAF.FUNC_BODY.35=                                                   where R2.CLIENT = C.ID)
+990004\DICMETAF.FUNC_BODY.36=                         where C.ID = :ID]
+990004\DICMETAF.FUNC_BODY.37=    from %client
+990004\DICMETAF.FUNC_BODY.38=    into FACE, ISSUER, INCOME_FACE, INCOME_ACC
+990004\DICMETAF.FUNC_BODY.39=    do
+990004\DICMETAF.FUNC_BODY.40=        _F_ENVLIGHT->add_face_seed(v_queue.self, FACE);
+990004\DICMETAF.FUNC_BODY.41=        _F_ENVLIGHT->add_face_seed(v_queue.self, ISSUER);
+990004\DICMETAF.FUNC_BODY.42=        _F_ENVLIGHT->add_face_seed(v_queue.self, INCOME_FACE);
+990004\DICMETAF.FUNC_BODY.43=        _F_ENVLIGHT->add_uniq(v_accs.self, INCOME_ACC);
+990004\DICMETAF.FUNC_BODY.44=    end;
+990004\DICMETAF.FUNC_BODY.45=    for 'Данные' select [select FACE, INCOME_ACC
+990004\DICMETAF.FUNC_BODY.46=                         from OD_AFFILS
+990004\DICMETAF.FUNC_BODY.47=                         where CLIENT = :CLIENT
+990004\DICMETAF.FUNC_BODY.48=                         order by ID]
+990004\DICMETAF.FUNC_BODY.49=    from %client
+990004\DICMETAF.FUNC_BODY.50=    into AFF_FACE, AFF_ACC
+990004\DICMETAF.FUNC_BODY.51=    do
+990004\DICMETAF.FUNC_BODY.52=        _F_ENVLIGHT->add_face_seed(v_queue.self, AFF_FACE);
+990004\DICMETAF.FUNC_BODY.53=        _F_ENVLIGHT->add_uniq(v_accs.self, AFF_ACC);
+990004\DICMETAF.FUNC_BODY.54=    end;
+990004\DICMETAF.FUNC_BODY.55=    v_i := 0;
+990004\DICMETAF.FUNC_BODY.56=    while v_i < ListCount(v_accs) do
+990004\DICMETAF.FUNC_BODY.57=        for 'Данные' select [select FACE, MARKET, BANK
+990004\DICMETAF.FUNC_BODY.58=                             from OD_FACE_ACCS
+990004\DICMETAF.FUNC_BODY.59=                             where ID = :ID]
+990004\DICMETAF.FUNC_BODY.60=        from Int(ListGet(v_accs, v_i))
+990004\DICMETAF.FUNC_BODY.61=        into ACC_FACE, ACC_MARKET, ACC_BANK
+990004\DICMETAF.FUNC_BODY.62=        do
+990004\DICMETAF.FUNC_BODY.63=            _F_ENVLIGHT->add_face_seed(v_queue.self, ACC_FACE);
+990004\DICMETAF.FUNC_BODY.64=            _F_ENVLIGHT->add_face_seed(v_queue.self, ACC_MARKET);
+990004\DICMETAF.FUNC_BODY.65=            _F_ENVLIGHT->add_face_seed(v_queue.self, ACC_BANK);
+990004\DICMETAF.FUNC_BODY.66=        end;
+990004\DICMETAF.FUNC_BODY.67=        v_i := v_i + 1;
+990004\DICMETAF.FUNC_BODY.68=    end;
+990004\DICMETAF.FUNC_BODY.69=    _F_ENVLIGHT->face_closure(v_queue.self, v_efrom.self, v_eto.self);
+990004\DICMETAF.FUNC_BODY.70=    _F_ENVLIGHT->faces_emit(v_lines.self, v_seen.self, v_queue.self, v_efrom.self, v_eto.self);
+990004\DICMETAF.FUNC_BODY.71=    v_i := 0;
+990004\DICMETAF.FUNC_BODY.72=    while v_i < ListCount(v_accs) do
+990004\DICMETAF.FUNC_BODY.73=        _F_ENVLIGHT->out_account(v_lines.self, v_seen.self, Int(ListGet(v_accs, v_i)));
+990004\DICMETAF.FUNC_BODY.74=        v_i := v_i + 1;
+990004\DICMETAF.FUNC_BODY.75=    end;
+990004\DICMETAF.FUNC_BODY.76=    _F_ENVLIGHT->out_client(v_lines.self, v_seen.self, %client);
+990004\DICMETAF.FUNC_BODY.77=end;
+990004\DICMETAF.FUNC_BODY.78=_F_ENVLIGHT->join_lines(v_lines)
+990004\DICMETAF.FUNC_BODY.COUNT=79
+990004\DICMETAF.FUNC_HEADER.0=export_client( %client:Int ):Str
+990004\DICMETAF.FUNC_HEADER.COUNT=1
+990004\DICMETAF.FUNC_ID=export_client
+990004\DICMETAF.IS_CANON=0
+990004\DICMETAF.IS_USER=1
+990004\DICMETAF.MD5_HASH=9ab8f5fedf917155266bf3ff0479f86d
+990004\DICMETAF.MD5_STAMP=01.11.2026
+990005\DICMETAF.FORM_NUM=990000
+990005\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990005\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->export_face( %face:Int ):Str
+990005\DICMETAF.FUNC_BODY.02=   -----------------------------------------------------------------------------
+990005\DICMETAF.FUNC_BODY.03=   Сериализовать лицо в формат env-light.
+990005\DICMETAF.FUNC_BODY.05=   Выгружается выбранное лицо и все лица, на которые оно (по всем версиям)
+990005\DICMETAF.FUNC_BODY.06=   ссылается, включая ссылки этих лиц, и так далее: EXEC_ORGAN, NAL_ORGAN,
+990005\DICMETAF.FUNC_BODY.07=   DEPOT, REESTR, кодировщики кодов, уполномоченные. Лица, ссылающиеся на
+990005\DICMETAF.FUNC_BODY.08=   выбранное, не выгружаются. Лица идут в порядке зависимостей (сначала те,
+990005\DICMETAF.FUNC_BODY.09=   на кого ссылаются). Лицо-банк выгружается блоком bank.
+990005\DICMETAF.FUNC_BODY.11=   Ошибки обращения к БД не перехватываются: частичная выгрузка хуже, чем
+990005\DICMETAF.FUNC_BODY.12=   явный сбой.
+990005\DICMETAF.FUNC_BODY.14=   Параметры: %face - SELF_ID или ID версии лица.
+990005\DICMETAF.FUNC_BODY.15=   Возврат: текст сценария env-light (строки через CR LF).
+990005\DICMETAF.FUNC_BODY.16=   ----------------------------------------------------------------------------- */
+990005\DICMETAF.FUNC_BODY.17=var v_lines, v_seen, v_queue, v_efrom, v_eto, v_self;
+990005\DICMETAF.FUNC_BODY.18=v_lines := List();
+990005\DICMETAF.FUNC_BODY.19=v_seen := List();
+990005\DICMETAF.FUNC_BODY.20=v_queue := List();
+990005\DICMETAF.FUNC_BODY.21=v_efrom := List();
+990005\DICMETAF.FUNC_BODY.22=v_eto := List();
+990005\DICMETAF.FUNC_BODY.23=v_self := _F_ENVLIGHT->ref_self(%face);
+990005\DICMETAF.FUNC_BODY.24=if IsBlank(v_self) then
+990005\DICMETAF.FUNC_BODY.25=    ListAdd(v_lines, '# env-light: лицо ID=' + Trim(Str(%face)) + ' не найдено');
+990005\DICMETAF.FUNC_BODY.26=else
+990005\DICMETAF.FUNC_BODY.27=    ListAdd(v_lines, '# env-light: выгрузка лица SELF_ID=' + Trim(Str(v_self)));
+990005\DICMETAF.FUNC_BODY.28=    _F_ENVLIGHT->add_uniq(v_queue.self, v_self);
+990005\DICMETAF.FUNC_BODY.29=    _F_ENVLIGHT->face_closure(v_queue.self, v_efrom.self, v_eto.self);
+990005\DICMETAF.FUNC_BODY.30=    _F_ENVLIGHT->faces_emit(v_lines.self, v_seen.self, v_queue.self, v_efrom.self, v_eto.self);
+990005\DICMETAF.FUNC_BODY.31=end;
+990005\DICMETAF.FUNC_BODY.32=_F_ENVLIGHT->join_lines(v_lines)
+990005\DICMETAF.FUNC_BODY.COUNT=33
+990005\DICMETAF.FUNC_HEADER.0=export_face( %face:Int ):Str
+990005\DICMETAF.FUNC_HEADER.COUNT=1
+990005\DICMETAF.FUNC_ID=export_face
+990005\DICMETAF.IS_CANON=0
+990005\DICMETAF.IS_USER=1
+990005\DICMETAF.MD5_HASH=b3b4cd04b30845d5a26abba5caabe20f
+990005\DICMETAF.MD5_STAMP=01.11.2026
+990006\DICMETAF.FORM_NUM=990000
+990006\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990006\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->export_share( %share:Int ):Str
+990006\DICMETAF.FUNC_BODY.02=   -----------------------------------------------------------------------------
+990006\DICMETAF.FUNC_BODY.03=   Сериализовать финансовый инструмент в формат env-light.
+990006\DICMETAF.FUNC_BODY.05=   Выгружается блок share (все версии, с таблицей вида инструмента) и все
+990006\DICMETAF.FUNC_BODY.06=   лица, на которые он ссылается по любой версии: эмитент ISSUER, орган
+990006\DICMETAF.FUNC_BODY.07=   регистрации ORG_REG и ссылки таблиц вида (GUARANTOR, IMMO_COVER для
+990006\DICMETAF.FUNC_BODY.08=   облигаций, TRASSANT, REMITENT, TRASSAT, AVELIST для векселей, BANK для
+990006\DICMETAF.FUNC_BODY.09=   производных) - вместе с лицами, на которые ссылаются они. Порядок:
+990006\DICMETAF.FUNC_BODY.10=   лица, затем инструмент.
+990006\DICMETAF.FUNC_BODY.12=   Ошибки обращения к БД не перехватываются.
+990006\DICMETAF.FUNC_BODY.14=   Параметры: %share - SELF_ID инструмента (OD_VALUES.ID) или ID версии.
+990006\DICMETAF.FUNC_BODY.15=   Возврат: текст сценария env-light (строки через CR LF).
+990006\DICMETAF.FUNC_BODY.16=   ----------------------------------------------------------------------------- */
+990006\DICMETAF.FUNC_BODY.17=var ISSUER, ORG_REG, GUARANTOR, IMMO_COVER, TRASSANT, REMITENT, TRASSAT, AVELIST, BANK;
+990006\DICMETAF.FUNC_BODY.18=var v_lines, v_seen, v_queue, v_efrom, v_eto, v_self;
+990006\DICMETAF.FUNC_BODY.19=v_lines := List();
+990006\DICMETAF.FUNC_BODY.20=v_seen := List();
+990006\DICMETAF.FUNC_BODY.21=v_queue := List();
+990006\DICMETAF.FUNC_BODY.22=v_efrom := List();
+990006\DICMETAF.FUNC_BODY.23=v_eto := List();
+990006\DICMETAF.FUNC_BODY.24=v_self := _F_ENVLIGHT->share_self(%share);
+990006\DICMETAF.FUNC_BODY.25=if IsBlank(v_self) then
+990006\DICMETAF.FUNC_BODY.26=    ListAdd(v_lines, '# env-light: финансовый инструмент ID=' + Trim(Str(%share)) + ' не найден');
+990006\DICMETAF.FUNC_BODY.27=else
+990006\DICMETAF.FUNC_BODY.28=    ListAdd(v_lines, '# env-light: выгрузка финансового инструмента SELF_ID=' + Trim(Str(v_self)));
+990006\DICMETAF.FUNC_BODY.29=    for 'Данные' select [select ISSUER, ORG_REG
+990006\DICMETAF.FUNC_BODY.30=                         from OD_SHARES
+990006\DICMETAF.FUNC_BODY.31=                         where SELF_ID = :SELF_ID]
+990006\DICMETAF.FUNC_BODY.32=    from v_self
+990006\DICMETAF.FUNC_BODY.33=    into ISSUER, ORG_REG
+990006\DICMETAF.FUNC_BODY.34=    do
+990006\DICMETAF.FUNC_BODY.35=        _F_ENVLIGHT->add_face_seed(v_queue.self, ISSUER);
+990006\DICMETAF.FUNC_BODY.36=        _F_ENVLIGHT->add_face_seed(v_queue.self, ORG_REG);
+990006\DICMETAF.FUNC_BODY.37=    end;
+990006\DICMETAF.FUNC_BODY.38=    for 'Данные' select [select O.GUARANTOR, O.IMMO_COVER
+990006\DICMETAF.FUNC_BODY.39=                         from OD_O_SHARES O
+990006\DICMETAF.FUNC_BODY.40=                              join OD_SHARES S on S.ID = O.SHARE
+990006\DICMETAF.FUNC_BODY.41=                         where S.SELF_ID = :SELF_ID]
+990006\DICMETAF.FUNC_BODY.42=    from v_self
+990006\DICMETAF.FUNC_BODY.43=    into GUARANTOR, IMMO_COVER
+990006\DICMETAF.FUNC_BODY.44=    do
+990006\DICMETAF.FUNC_BODY.45=        _F_ENVLIGHT->add_face_seed(v_queue.self, GUARANTOR);
+990006\DICMETAF.FUNC_BODY.46=        _F_ENVLIGHT->add_face_seed(v_queue.self, IMMO_COVER);
+990006\DICMETAF.FUNC_BODY.47=    end;
+990006\DICMETAF.FUNC_BODY.48=    for 'Данные' select [select V.TRASSANT, V.REMITENT, V.TRASSAT, V.AVELIST
+990006\DICMETAF.FUNC_BODY.49=                         from OD_V_SHARES V
+990006\DICMETAF.FUNC_BODY.50=                              join OD_SHARES S on S.ID = V.SHARE
+990006\DICMETAF.FUNC_BODY.51=                         where S.SELF_ID = :SELF_ID]
+990006\DICMETAF.FUNC_BODY.52=    from v_self
+990006\DICMETAF.FUNC_BODY.53=    into TRASSANT, REMITENT, TRASSAT, AVELIST
+990006\DICMETAF.FUNC_BODY.54=    do
+990006\DICMETAF.FUNC_BODY.55=        _F_ENVLIGHT->add_face_seed(v_queue.self, TRASSANT);
+990006\DICMETAF.FUNC_BODY.56=        _F_ENVLIGHT->add_face_seed(v_queue.self, REMITENT);
+990006\DICMETAF.FUNC_BODY.57=        _F_ENVLIGHT->add_face_seed(v_queue.self, TRASSAT);
+990006\DICMETAF.FUNC_BODY.58=        _F_ENVLIGHT->add_face_seed(v_queue.self, AVELIST);
+990006\DICMETAF.FUNC_BODY.59=    end;
+990006\DICMETAF.FUNC_BODY.60=    for 'Данные' select [select T.BANK
+990006\DICMETAF.FUNC_BODY.61=                         from OD_T_SHARES T
+990006\DICMETAF.FUNC_BODY.62=                              join OD_SHARES S on S.ID = T.SHARE
+990006\DICMETAF.FUNC_BODY.63=                         where S.SELF_ID = :SELF_ID]
+990006\DICMETAF.FUNC_BODY.64=    from v_self
+990006\DICMETAF.FUNC_BODY.65=    into BANK
+990006\DICMETAF.FUNC_BODY.66=    do
+990006\DICMETAF.FUNC_BODY.67=        _F_ENVLIGHT->add_face_seed(v_queue.self, BANK);
+990006\DICMETAF.FUNC_BODY.68=    end;
+990006\DICMETAF.FUNC_BODY.69=    _F_ENVLIGHT->face_closure(v_queue.self, v_efrom.self, v_eto.self);
+990006\DICMETAF.FUNC_BODY.70=    _F_ENVLIGHT->faces_emit(v_lines.self, v_seen.self, v_queue.self, v_efrom.self, v_eto.self);
+990006\DICMETAF.FUNC_BODY.71=    _F_ENVLIGHT->out_share(v_lines.self, v_seen.self, v_self);
+990006\DICMETAF.FUNC_BODY.72=end;
+990006\DICMETAF.FUNC_BODY.73=_F_ENVLIGHT->join_lines(v_lines)
+990006\DICMETAF.FUNC_BODY.COUNT=74
+990006\DICMETAF.FUNC_HEADER.0=export_share( %share:Int ):Str
+990006\DICMETAF.FUNC_HEADER.COUNT=1
+990006\DICMETAF.FUNC_ID=export_share
+990006\DICMETAF.IS_CANON=0
+990006\DICMETAF.IS_USER=1
+990006\DICMETAF.MD5_HASH=f88a21068dda7bf1a8b7c8e3e66a8a1c
+990006\DICMETAF.MD5_STAMP=01.11.2026
+990007\DICMETAF.FORM_NUM=990000
+990007\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990007\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->face_closure( %queue:LargeInt; %efrom:LargeInt; %eto:LargeInt )
+990007\DICMETAF.FUNC_BODY.02=   -----------------------------------------------------------------------------
+990007\DICMETAF.FUNC_BODY.03=   Замкнуть очередь лиц по ссылкам: для каждого лица очереди собрать лица, на
+990007\DICMETAF.FUNC_BODY.04=   которые оно ссылается, и так до тех пор, пока очередь не перестанет расти.
+990007\DICMETAF.FUNC_BODY.05=   Рекурсии нет - обход идёт по растущему списку.
+990007\DICMETAF.FUNC_BODY.07=   Параметры:
+990007\DICMETAF.FUNC_BODY.08=     %queue - очередь лиц; на входе - начальные лица (SELF_ID строками);
+990007\DICMETAF.FUNC_BODY.09=     %efrom, %eto - списки рёбер, заполняются.
+990007\DICMETAF.FUNC_BODY.10=   ----------------------------------------------------------------------------- */
+990007\DICMETAF.FUNC_BODY.11=var v_i;
+990007\DICMETAF.FUNC_BODY.12=v_i := 0;
+990007\DICMETAF.FUNC_BODY.13=while v_i < ListCount(%queue) do
+990007\DICMETAF.FUNC_BODY.14=    _F_ENVLIGHT->face_refs_add(%queue, %efrom, %eto, Int(ListGet(%queue, v_i)));
+990007\DICMETAF.FUNC_BODY.15=    v_i := v_i + 1;
+990007\DICMETAF.FUNC_BODY.16=end
+990007\DICMETAF.FUNC_BODY.COUNT=17
+990007\DICMETAF.FUNC_HEADER.0=face_closure( %queue:LargeInt; %efrom:LargeInt; %eto:LargeInt )
+990007\DICMETAF.FUNC_HEADER.COUNT=1
+990007\DICMETAF.FUNC_ID=face_closure
+990007\DICMETAF.IS_CANON=0
+990007\DICMETAF.IS_USER=1
+990007\DICMETAF.MD5_HASH=cd5d63eb74b716b63518a741f88226ed
+990007\DICMETAF.MD5_STAMP=01.11.2026
+990008\DICMETAF.FORM_NUM=990000
+990008\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990008\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->face_refs_add( %queue:LargeInt; %efrom:LargeInt; %eto:LargeInt;
+990008\DICMETAF.FUNC_BODY.02=      %id:Int )
+990008\DICMETAF.FUNC_BODY.03=   -----------------------------------------------------------------------------
+990008\DICMETAF.FUNC_BODY.04=   Найти лица, на которые ссылается лицо, записать рёбра графа ссылок и
+990008\DICMETAF.FUNC_BODY.05=   добавить новые лица в очередь обхода.
+990008\DICMETAF.FUNC_BODY.07=   Ссылки лица (по всем его версиям): поля юрлица EXEC_ORGAN, NAL_ORGAN,
+990008\DICMETAF.FUNC_BODY.08=   DEPOT, REESTR (OD_U_FACES); кодировщики кодов (OD_FACE_CODERS);
+990008\DICMETAF.FUNC_BODY.09=   уполномоченные (OD_A_FACES, IS_A = 1). Лица, ссылающиеся на данное, не берутся.
+990008\DICMETAF.FUNC_BODY.11=   Параметры:
+990008\DICMETAF.FUNC_BODY.12=     %queue - очередь лиц (SELF_ID строками), дополняется;
+990008\DICMETAF.FUNC_BODY.13=     %efrom, %eto - параллельные списки рёбер <<из>> и <<в>> (SELF_ID строками);
+990008\DICMETAF.FUNC_BODY.14=     %id    - SELF_ID лица, ссылки которого собираются.
+990008\DICMETAF.FUNC_BODY.15=   ----------------------------------------------------------------------------- */
+990008\DICMETAF.FUNC_BODY.16=var R_ID;
+990008\DICMETAF.FUNC_BODY.17=for 'Данные' select [select RF.SELF_ID
+990008\DICMETAF.FUNC_BODY.18=                     from OD_FACES F
+990008\DICMETAF.FUNC_BODY.19=                          join OD_U_FACES U on U.FACE = F.ID
+990008\DICMETAF.FUNC_BODY.20=                          join OD_FACES RF on RF.ID in (U.EXEC_ORGAN, U.NAL_ORGAN, U.DEPOT, U.REESTR)
+990008\DICMETAF.FUNC_BODY.21=                     where F.SELF_ID = :SELF_ID
+990008\DICMETAF.FUNC_BODY.22=                     union
+990008\DICMETAF.FUNC_BODY.23=                     select RF.SELF_ID
+990008\DICMETAF.FUNC_BODY.24=                     from OD_FACE_CODERS C
+990008\DICMETAF.FUNC_BODY.25=                          join OD_FACES RF on RF.ID = C.CODER
+990008\DICMETAF.FUNC_BODY.26=                     where C.FACE = :C_FACE
+990008\DICMETAF.FUNC_BODY.27=                     union
+990008\DICMETAF.FUNC_BODY.28=                     select RF.SELF_ID
+990008\DICMETAF.FUNC_BODY.29=                     from OD_A_FACES A
+990008\DICMETAF.FUNC_BODY.30=                          join OD_FACES RF on RF.ID = A.WORKER
+990008\DICMETAF.FUNC_BODY.31=                     where A.FACE = :A_FACE and A.IS_A = 1]
+990008\DICMETAF.FUNC_BODY.32=from %id, %id, %id
+990008\DICMETAF.FUNC_BODY.33=into R_ID
+990008\DICMETAF.FUNC_BODY.34=do
+990008\DICMETAF.FUNC_BODY.35=    if R_ID <> %id then
+990008\DICMETAF.FUNC_BODY.36=        ListAdd(%efrom, Trim(Str(%id)));
+990008\DICMETAF.FUNC_BODY.37=        ListAdd(%eto, Trim(Str(R_ID)));
+990008\DICMETAF.FUNC_BODY.38=        _F_ENVLIGHT->add_uniq(%queue, R_ID);
+990008\DICMETAF.FUNC_BODY.39=    end;
+990008\DICMETAF.FUNC_BODY.40=end
+990008\DICMETAF.FUNC_BODY.COUNT=41
+990008\DICMETAF.FUNC_HEADER.0=face_refs_add( %queue:LargeInt; %efrom:LargeInt; %eto:LargeInt;
+990008\DICMETAF.FUNC_HEADER.1=   %id:Int )
+990008\DICMETAF.FUNC_HEADER.COUNT=2
+990008\DICMETAF.FUNC_ID=face_refs_add
+990008\DICMETAF.IS_CANON=0
+990008\DICMETAF.IS_USER=1
+990008\DICMETAF.MD5_HASH=5bbfa3ed5abb86f482f8860133393bad
+990008\DICMETAF.MD5_STAMP=01.11.2026
+990009\DICMETAF.FORM_NUM=990000
+990009\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990009\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->faces_emit( %lines:LargeInt; %seen:LargeInt; %queue:LargeInt;
+990009\DICMETAF.FUNC_BODY.02=      %efrom:LargeInt; %eto:LargeInt )
+990009\DICMETAF.FUNC_BODY.03=   -----------------------------------------------------------------------------
+990009\DICMETAF.FUNC_BODY.04=   Выгрузить лица очереди в таком порядке, чтобы лицо шло после всех лиц, на
+990009\DICMETAF.FUNC_BODY.05=   которые ссылается (в сценарии env-light ссылка на ещё не объявленный алиас -
+990009\DICMETAF.FUNC_BODY.06=   ошибка). Проходы по очереди повторяются, пока выгружается хотя бы одно лицо;
+990009\DICMETAF.FUNC_BODY.07=   лица из цикла ссылок выгружаются в конце, а их ссылки друг на друга
+990009\DICMETAF.FUNC_BODY.08=   заменяются комментариями (put_f).
+990009\DICMETAF.FUNC_BODY.10=   Параметры:
+990009\DICMETAF.FUNC_BODY.11=     %lines         - список строк выгрузки;
+990009\DICMETAF.FUNC_BODY.12=     %seen          - список выгруженных объектов, дополняется;
+990009\DICMETAF.FUNC_BODY.13=     %queue         - очередь лиц (SELF_ID строками);
+990009\DICMETAF.FUNC_BODY.14=     %efrom, %eto   - списки рёбер графа ссылок.
+990009\DICMETAF.FUNC_BODY.15=   ----------------------------------------------------------------------------- */
+990009\DICMETAF.FUNC_BODY.16=var v_progress, v_i, v_n, v_id;
+990009\DICMETAF.FUNC_BODY.17=v_n := ListCount(%queue);
+990009\DICMETAF.FUNC_BODY.18=v_progress := 1;
+990009\DICMETAF.FUNC_BODY.19=while v_progress = 1 do
+990009\DICMETAF.FUNC_BODY.20=    v_progress := 0;
+990009\DICMETAF.FUNC_BODY.21=    v_i := 0;
+990009\DICMETAF.FUNC_BODY.22=    while v_i < v_n do
+990009\DICMETAF.FUNC_BODY.23=        v_id := Int(ListGet(%queue, v_i));
+990009\DICMETAF.FUNC_BODY.24=        if _F_ENVLIGHT->has(%seen, 'F' + Trim(Str(v_id))) = 0 then
+990009\DICMETAF.FUNC_BODY.25=            if _F_ENVLIGHT->deps_ready(%seen, %efrom, %eto, v_id) = 1 then
+990009\DICMETAF.FUNC_BODY.26=                _F_ENVLIGHT->out_face(%lines, %seen, v_id);
+990009\DICMETAF.FUNC_BODY.27=                v_progress := 1;
+990009\DICMETAF.FUNC_BODY.28=            end;
+990009\DICMETAF.FUNC_BODY.29=        end;
+990009\DICMETAF.FUNC_BODY.30=        v_i := v_i + 1;
+990009\DICMETAF.FUNC_BODY.31=    end;
+990009\DICMETAF.FUNC_BODY.32=end;
+990009\DICMETAF.FUNC_BODY.33=/* оставшиеся лица - участники цикла ссылок */
+990009\DICMETAF.FUNC_BODY.34=v_i := 0;
+990009\DICMETAF.FUNC_BODY.35=while v_i < v_n do
+990009\DICMETAF.FUNC_BODY.36=    v_id := Int(ListGet(%queue, v_i));
+990009\DICMETAF.FUNC_BODY.37=    if _F_ENVLIGHT->has(%seen, 'F' + Trim(Str(v_id))) = 0 then
+990009\DICMETAF.FUNC_BODY.38=        _F_ENVLIGHT->out_face(%lines, %seen, v_id);
+990009\DICMETAF.FUNC_BODY.39=    end;
+990009\DICMETAF.FUNC_BODY.40=    v_i := v_i + 1;
+990009\DICMETAF.FUNC_BODY.41=end
+990009\DICMETAF.FUNC_BODY.COUNT=42
+990009\DICMETAF.FUNC_HEADER.0=faces_emit( %lines:LargeInt; %seen:LargeInt; %queue:LargeInt;
+990009\DICMETAF.FUNC_HEADER.1=   %efrom:LargeInt; %eto:LargeInt )
+990009\DICMETAF.FUNC_HEADER.COUNT=2
+990009\DICMETAF.FUNC_ID=faces_emit
+990009\DICMETAF.IS_CANON=0
+990009\DICMETAF.IS_USER=1
+990009\DICMETAF.MD5_HASH=66deed61fc297439275d5a93794be887
+990009\DICMETAF.MD5_STAMP=01.11.2026
+990010\DICMETAF.FORM_NUM=990000
+990010\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990010\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->flat( %value ):Str
+990010\DICMETAF.FUNC_BODY.02=   -----------------------------------------------------------------------------
+990010\DICMETAF.FUNC_BODY.03=   Значение поля в одну строку: переводы строк заменяются пробелом, края
+990010\DICMETAF.FUNC_BODY.04=   обрезаются. Значение поля env-light не может занимать несколько строк.
+990010\DICMETAF.FUNC_BODY.06=   Параметры:
+990010\DICMETAF.FUNC_BODY.07=     %value - любое значение; NULL и пустая строка дают пустую строку.
+990010\DICMETAF.FUNC_BODY.08=   Возврат: строка без переводов строк.
+990010\DICMETAF.FUNC_BODY.09=   ----------------------------------------------------------------------------- */
+990010\DICMETAF.FUNC_BODY.10=var v_res;
+990010\DICMETAF.FUNC_BODY.11=v_res := '';
+990010\DICMETAF.FUNC_BODY.12=if ~IsBlank(%value) then
+990010\DICMETAF.FUNC_BODY.13=    v_res := Str(%value);
+990010\DICMETAF.FUNC_BODY.14=    v_res := replace(v_res, #13 + #10, ' ');
+990010\DICMETAF.FUNC_BODY.15=    v_res := replace(v_res, #10, ' ');
+990010\DICMETAF.FUNC_BODY.16=    v_res := replace(v_res, #13, ' ');
+990010\DICMETAF.FUNC_BODY.17=    v_res := Trim(v_res);
+990010\DICMETAF.FUNC_BODY.18=end;
+990010\DICMETAF.FUNC_BODY.19=v_res
+990010\DICMETAF.FUNC_BODY.COUNT=20
+990010\DICMETAF.FUNC_HEADER.0=flat( %value ):Str
+990010\DICMETAF.FUNC_HEADER.COUNT=1
+990010\DICMETAF.FUNC_ID=flat
+990010\DICMETAF.IS_CANON=0
+990010\DICMETAF.IS_USER=1
+990010\DICMETAF.MD5_HASH=1fd0351d5aa7bf08a4f9e39e445fd92a
+990010\DICMETAF.MD5_STAMP=01.11.2026
+990011\DICMETAF.FORM_NUM=990000
+990011\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990011\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->fmt_date( %d:Date ):Str
+990011\DICMETAF.FUNC_BODY.02=   -----------------------------------------------------------------------------
+990011\DICMETAF.FUNC_BODY.03=   Дата в виде ДД.ММ.ГГГГ: так записываются значения-даты в полях блоков
+990011\DICMETAF.FUNC_BODY.04=   env-light (платформенные API_* разбирают этот вид надёжно).
+990011\DICMETAF.FUNC_BODY.06=   Параметры:
+990011\DICMETAF.FUNC_BODY.07=     %d - дата или дата-время (время отбрасывается).
+990011\DICMETAF.FUNC_BODY.08=   Возврат: строка ДД.ММ.ГГГГ.
+990011\DICMETAF.FUNC_BODY.09=   ----------------------------------------------------------------------------- */
+990011\DICMETAF.FUNC_BODY.10=var v_res;
+990011\DICMETAF.FUNC_BODY.11=v_res := format('%2.2d', Day(%d)) + '.' + format('%2.2d', Month(%d)) + '.' + Str(Year(%d));
+990011\DICMETAF.FUNC_BODY.12=v_res
+990011\DICMETAF.FUNC_BODY.COUNT=13
+990011\DICMETAF.FUNC_HEADER.0=fmt_date( %d:Date ):Str
+990011\DICMETAF.FUNC_HEADER.COUNT=1
+990011\DICMETAF.FUNC_ID=fmt_date
+990011\DICMETAF.IS_CANON=0
+990011\DICMETAF.IS_USER=1
+990011\DICMETAF.MD5_HASH=230af1eeb05380a9635ada9dcb72cf49
+990011\DICMETAF.MD5_STAMP=01.11.2026
+990012\DICMETAF.FORM_NUM=990000
+990012\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990012\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->fmt_iso( %d:Date ):Str
+990012\DICMETAF.FUNC_BODY.02=   -----------------------------------------------------------------------------
+990012\DICMETAF.FUNC_BODY.03=   Дата в виде ГГГГ-ММ-ДД: так записывается as_of в блоках env-light
+990012\DICMETAF.FUNC_BODY.04=   (движок сравнивает такие строки по порядку, поэтому нужен именно этот вид).
+990012\DICMETAF.FUNC_BODY.06=   Параметры:
+990012\DICMETAF.FUNC_BODY.07=     %d - дата или дата-время (время отбрасывается).
+990012\DICMETAF.FUNC_BODY.08=   Возврат: строка ГГГГ-ММ-ДД.
+990012\DICMETAF.FUNC_BODY.09=   ----------------------------------------------------------------------------- */
+990012\DICMETAF.FUNC_BODY.10=var v_res;
+990012\DICMETAF.FUNC_BODY.11=v_res := Str(Year(%d)) + '-' + format('%2.2d', Month(%d)) + '-' + format('%2.2d', Day(%d));
+990012\DICMETAF.FUNC_BODY.12=v_res
+990012\DICMETAF.FUNC_BODY.COUNT=13
+990012\DICMETAF.FUNC_HEADER.0=fmt_iso( %d:Date ):Str
+990012\DICMETAF.FUNC_HEADER.COUNT=1
+990012\DICMETAF.FUNC_ID=fmt_iso
+990012\DICMETAF.IS_CANON=0
+990012\DICMETAF.IS_USER=1
+990012\DICMETAF.MD5_HASH=0a9b4405e98bc29e7d9328a57449981d
+990012\DICMETAF.MD5_STAMP=01.11.2026
+990013\DICMETAF.FORM_NUM=990000
+990013\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990013\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->has( %lst:LargeInt; %value:Str ):Int
+990013\DICMETAF.FUNC_BODY.02=   -----------------------------------------------------------------------------
+990013\DICMETAF.FUNC_BODY.03=   Есть ли строка в списке.
+990013\DICMETAF.FUNC_BODY.05=   Параметры:
+990013\DICMETAF.FUNC_BODY.06=     %lst   - дескриптор списка (L.self);
+990013\DICMETAF.FUNC_BODY.07=     %value - искомая строка (сравнение точное).
+990013\DICMETAF.FUNC_BODY.08=   Возврат: 1 - есть, 0 - нет.
+990013\DICMETAF.FUNC_BODY.09=   ----------------------------------------------------------------------------- */
+990013\DICMETAF.FUNC_BODY.10=var v_i, v_n;
+990013\DICMETAF.FUNC_BODY.11=v_n := ListCount(%lst);
+990013\DICMETAF.FUNC_BODY.12=v_i := 0;
+990013\DICMETAF.FUNC_BODY.13=while v_i < v_n do
+990013\DICMETAF.FUNC_BODY.14=    if ListGet(%lst, v_i) = %value then
+990013\DICMETAF.FUNC_BODY.15=        return(1);
+990013\DICMETAF.FUNC_BODY.16=    end;
+990013\DICMETAF.FUNC_BODY.17=    v_i := v_i + 1;
+990013\DICMETAF.FUNC_BODY.18=end;
+990013\DICMETAF.FUNC_BODY.19=0
+990013\DICMETAF.FUNC_BODY.COUNT=20
+990013\DICMETAF.FUNC_HEADER.0=has( %lst:LargeInt; %value:Str ):Int
+990013\DICMETAF.FUNC_HEADER.COUNT=1
+990013\DICMETAF.FUNC_ID=has
+990013\DICMETAF.IS_CANON=0
+990013\DICMETAF.IS_USER=1
+990013\DICMETAF.MD5_HASH=17547d4158f7428b81beaf081e850334
+990013\DICMETAF.MD5_STAMP=01.11.2026
+990014\DICMETAF.FORM_NUM=990000
+990014\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990014\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->join_lines( %lst:List ):Str
+990014\DICMETAF.FUNC_BODY.02=   -----------------------------------------------------------------------------
+990014\DICMETAF.FUNC_BODY.03=   Склеить строки выгрузки в текст с переводами строк CR LF.
+990014\DICMETAF.FUNC_BODY.05=   Параметры: %lst - список строк.
+990014\DICMETAF.FUNC_BODY.06=   Возврат: текст.
+990014\DICMETAF.FUNC_BODY.07=   ----------------------------------------------------------------------------- */
+990014\DICMETAF.FUNC_BODY.08=var v_res, v_i, v_n;
+990014\DICMETAF.FUNC_BODY.09=v_res := '';
+990014\DICMETAF.FUNC_BODY.10=v_n := ListCount(%lst);
+990014\DICMETAF.FUNC_BODY.11=v_i := 0;
+990014\DICMETAF.FUNC_BODY.12=while v_i < v_n do
+990014\DICMETAF.FUNC_BODY.13=    if v_i > 0 then
+990014\DICMETAF.FUNC_BODY.14=        v_res := v_res + #13 + #10;
+990014\DICMETAF.FUNC_BODY.15=    end;
+990014\DICMETAF.FUNC_BODY.16=    v_res := v_res + ListGet(%lst, v_i);
+990014\DICMETAF.FUNC_BODY.17=    v_i := v_i + 1;
+990014\DICMETAF.FUNC_BODY.18=end;
+990014\DICMETAF.FUNC_BODY.19=v_res
+990014\DICMETAF.FUNC_BODY.COUNT=20
+990014\DICMETAF.FUNC_HEADER.0=join_lines( %lst:List ):Str
+990014\DICMETAF.FUNC_HEADER.COUNT=1
+990014\DICMETAF.FUNC_ID=join_lines
+990014\DICMETAF.IS_CANON=0
+990014\DICMETAF.IS_USER=1
+990014\DICMETAF.MD5_HASH=99adaecbf80e0d7e448f78d5e084b44a
+990014\DICMETAF.MD5_STAMP=01.11.2026
+990015\DICMETAF.FORM_NUM=990000
+990015\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990015\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->out_account( %lines:LargeInt; %seen:LargeInt; %acc_id:Int )
+990015\DICMETAF.FUNC_BODY.02=   -----------------------------------------------------------------------------
+990015\DICMETAF.FUNC_BODY.03=   Выгрузить банковский счёт блоком "bank_account &a<ID>". Банк указывается
+990015\DICMETAF.FUNC_BODY.04=   через поле BIC: БИК из OD_BANKS, а если его нет - SWIFT, затем мнемоника
+990015\DICMETAF.FUNC_BODY.05=   лица-банка (так банк находит API_FIND_ACC). Владелец FACE и площадка MARKET -
+990015\DICMETAF.FUNC_BODY.06=   ссылки на лица. Код валюты ACC_VAL выводится числом, только если он не
+990015\DICMETAF.FUNC_BODY.07=   равен базовой валюте базы (число действует лишь в этой базе).
+990015\DICMETAF.FUNC_BODY.08=   Не выводятся: LINK (другой счёт), PLACE (цепочка), служебные поля.
+990015\DICMETAF.FUNC_BODY.09=   В конце счёт отмечается в %seen ключом A<ID>.
+990015\DICMETAF.FUNC_BODY.11=   Параметры:
+990015\DICMETAF.FUNC_BODY.12=     %lines  - список строк выгрузки;
+990015\DICMETAF.FUNC_BODY.13=     %seen   - список выгруженных объектов, дополняется;
+990015\DICMETAF.FUNC_BODY.14=     %acc_id - OD_FACE_ACCS.ID.
+990015\DICMETAF.FUNC_BODY.15=   ----------------------------------------------------------------------------- */
+990015\DICMETAF.FUNC_BODY.16=var FACE, BANK, ACNT, A_TYPE, S_TYPE, IS_MAIN, IS_POP, NAME, O_NUM, O_DATE, A_DATE,
+990015\DICMETAF.FUNC_BODY.17=    C_DATE, ACC_VAL, MARKET, DEPARTMENT, DEPART_CITY, ACNT_CORR, BASE_CURR;
+990015\DICMETAF.FUNC_BODY.18=var v_ind, v_bank, v_bic;
+990015\DICMETAF.FUNC_BODY.19=v_ind := '  ';
+990015\DICMETAF.FUNC_BODY.20=for 'Данные' select [select FACE, BANK, ACNT, A_TYPE, S_TYPE, IS_MAIN, IS_POP, NAME, O_NUM,
+990015\DICMETAF.FUNC_BODY.21=                            O_DATE, A_DATE, C_DATE, ACC_VAL, MARKET, DEPARTMENT, DEPART_CITY,
+990015\DICMETAF.FUNC_BODY.22=                            ACNT_CORR, (select VALUE_ID from OD_PR_BASE_ID) as BASE_CURR
+990015\DICMETAF.FUNC_BODY.23=                     from OD_FACE_ACCS
+990015\DICMETAF.FUNC_BODY.24=                     where ID = :ID]
+990015\DICMETAF.FUNC_BODY.25=from %acc_id
+990015\DICMETAF.FUNC_BODY.26=into FACE, BANK, ACNT, A_TYPE, S_TYPE, IS_MAIN, IS_POP, NAME, O_NUM,
+990015\DICMETAF.FUNC_BODY.27=     O_DATE, A_DATE, C_DATE, ACC_VAL, MARKET, DEPARTMENT, DEPART_CITY,
+990015\DICMETAF.FUNC_BODY.28=     ACNT_CORR, BASE_CURR
+990015\DICMETAF.FUNC_BODY.29=do
+990015\DICMETAF.FUNC_BODY.30=    v_bic := clear('');
+990015\DICMETAF.FUNC_BODY.31=    v_bank := _F_ENVLIGHT->ref_self(BANK);
+990015\DICMETAF.FUNC_BODY.32=    if ~IsBlank(v_bank) then
+990015\DICMETAF.FUNC_BODY.33=        v_bic := Extract('Данные',
+990015\DICMETAF.FUNC_BODY.34=                         [select max(BIC) from OD_BANKS
+990015\DICMETAF.FUNC_BODY.35=                          where U_FACE = :U_FACE], v_bank);
+990015\DICMETAF.FUNC_BODY.36=        if IsBlank(v_bic) then
+990015\DICMETAF.FUNC_BODY.37=            v_bic := Extract('Данные',
+990015\DICMETAF.FUNC_BODY.38=                             [select max(SWIFT) from OD_BANKS
+990015\DICMETAF.FUNC_BODY.39=                              where U_FACE = :U_FACE], v_bank);
+990015\DICMETAF.FUNC_BODY.40=        end;
+990015\DICMETAF.FUNC_BODY.41=        if IsBlank(v_bic) then
+990015\DICMETAF.FUNC_BODY.42=            v_bic := Extract('Данные',
+990015\DICMETAF.FUNC_BODY.43=                             [select max(MNEM) from OD_FACES
+990015\DICMETAF.FUNC_BODY.44=                              where SELF_ID = :SELF_ID and LAST_FLAG = 1], v_bank);
+990015\DICMETAF.FUNC_BODY.45=        end;
+990015\DICMETAF.FUNC_BODY.46=    end;
+990015\DICMETAF.FUNC_BODY.47=    ListAdd(%lines, '');
+990015\DICMETAF.FUNC_BODY.48=    ListAdd(%lines, '# счёт ' + _F_ENVLIGHT->flat(ACNT));
+990015\DICMETAF.FUNC_BODY.49=    if IsBlank(v_bic) then
+990015\DICMETAF.FUNC_BODY.50=        ListAdd(%lines, '# банк счёта не определён (нет BIC, SWIFT и мнемоники): блок не загрузится');
+990015\DICMETAF.FUNC_BODY.51=    end;
+990015\DICMETAF.FUNC_BODY.52=    ListAdd(%lines, 'bank_account &a' + Trim(Str(%acc_id)));
+990015\DICMETAF.FUNC_BODY.53=    _F_ENVLIGHT->put_s(%lines, v_ind, 'ACNT', ACNT);
+990015\DICMETAF.FUNC_BODY.54=    _F_ENVLIGHT->put_s(%lines, v_ind, 'BIC', v_bic);
+990015\DICMETAF.FUNC_BODY.55=    _F_ENVLIGHT->put_f(%lines, v_ind, 'FACE', %seen, FACE);
+990015\DICMETAF.FUNC_BODY.56=    _F_ENVLIGHT->put_z(%lines, v_ind, 'A_TYPE', A_TYPE);
+990015\DICMETAF.FUNC_BODY.57=    _F_ENVLIGHT->put_n(%lines, v_ind, 'S_TYPE', S_TYPE);
+990015\DICMETAF.FUNC_BODY.58=    _F_ENVLIGHT->put_z(%lines, v_ind, 'IS_MAIN', IS_MAIN);
+990015\DICMETAF.FUNC_BODY.59=    _F_ENVLIGHT->put_z(%lines, v_ind, 'IS_POP', IS_POP);
+990015\DICMETAF.FUNC_BODY.60=    _F_ENVLIGHT->put_s(%lines, v_ind, 'NAME', NAME);
+990015\DICMETAF.FUNC_BODY.61=    _F_ENVLIGHT->put_s(%lines, v_ind, 'O_NUM', O_NUM);
+990015\DICMETAF.FUNC_BODY.62=    _F_ENVLIGHT->put_d(%lines, v_ind, 'O_DATE', O_DATE);
+990015\DICMETAF.FUNC_BODY.63=    _F_ENVLIGHT->put_d(%lines, v_ind, 'A_DATE', A_DATE);
+990015\DICMETAF.FUNC_BODY.64=    _F_ENVLIGHT->put_d(%lines, v_ind, 'C_DATE', C_DATE);
+990015\DICMETAF.FUNC_BODY.65=    if ~IsBlank(ACC_VAL) then
+990015\DICMETAF.FUNC_BODY.66=        if ACC_VAL <> BASE_CURR then
+990015\DICMETAF.FUNC_BODY.67=            _F_ENVLIGHT->put_n(%lines, v_ind, 'ACC_VAL', ACC_VAL);
+990015\DICMETAF.FUNC_BODY.68=        end;
+990015\DICMETAF.FUNC_BODY.69=    end;
+990015\DICMETAF.FUNC_BODY.70=    _F_ENVLIGHT->put_f(%lines, v_ind, 'MARKET', %seen, MARKET);
+990015\DICMETAF.FUNC_BODY.71=    _F_ENVLIGHT->put_s(%lines, v_ind, 'DEPARTMENT', DEPARTMENT);
+990015\DICMETAF.FUNC_BODY.72=    _F_ENVLIGHT->put_s(%lines, v_ind, 'DEPART_CITY', DEPART_CITY);
+990015\DICMETAF.FUNC_BODY.73=    _F_ENVLIGHT->put_s(%lines, v_ind, 'ACNT_CORR', ACNT_CORR);
+990015\DICMETAF.FUNC_BODY.74=end;
+990015\DICMETAF.FUNC_BODY.75=ListAdd(%seen, 'A' + Trim(Str(%acc_id)))
+990015\DICMETAF.FUNC_BODY.COUNT=76
+990015\DICMETAF.FUNC_HEADER.0=out_account( %lines:LargeInt; %seen:LargeInt; %acc_id:Int )
+990015\DICMETAF.FUNC_HEADER.COUNT=1
+990015\DICMETAF.FUNC_ID=out_account
+990015\DICMETAF.IS_CANON=0
+990015\DICMETAF.IS_USER=1
+990015\DICMETAF.MD5_HASH=0527c7491dc6a087909c621eeae5db94
+990015\DICMETAF.MD5_STAMP=01.11.2026
+990016\DICMETAF.FORM_NUM=990000
+990016\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990016\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->out_affiliates( %lines:LargeInt; %ind:Str; %seen:LargeInt;
+990016\DICMETAF.FUNC_BODY.02=      %client_id:Int )
+990016\DICMETAF.FUNC_BODY.03=   -----------------------------------------------------------------------------
+990016\DICMETAF.FUNC_BODY.04=   Вложенные блоки affiliate лицевого счёта (OD_AFFILS): "affiliate: &f<SELF_ID>"
+990016\DICMETAF.FUNC_BODY.05=   с полем RELATION и остальными полями записи. Банковский счёт INCOME_ACC -
+990016\DICMETAF.FUNC_BODY.06=   ссылка <<&алиас>>. Записи, лицо которых не выгружено, заменяются комментарием.
+990016\DICMETAF.FUNC_BODY.07=   Запись владельца (RELATION = 0), созданная самой вставкой счёта, тоже
+990016\DICMETAF.FUNC_BODY.08=   выгружается; при загрузке она будет найдена, а не создана повторно.
+990016\DICMETAF.FUNC_BODY.10=   Параметры:
+990016\DICMETAF.FUNC_BODY.11=     %lines - список строк выгрузки; %ind - отступ блока affiliate;
+990016\DICMETAF.FUNC_BODY.12=     %seen  - список выгруженных объектов;
+990016\DICMETAF.FUNC_BODY.13=     %client_id - OD_CLIENTS.ID.
+990016\DICMETAF.FUNC_BODY.14=   ----------------------------------------------------------------------------- */
+990016\DICMETAF.FUNC_BODY.15=var FACE, RELATION, B_DATE, E_DATE, A_TYPE, A_NUM, A_DATE, A_END, PERCENT_, A_POWER,
+990016\DICMETAF.FUNC_BODY.16=    INCOME_ACC, INCOME_REC, INCOME_ADR, INCOME_VERBAL, NUMERATOR, DENOMINATOR;
+990016\DICMETAF.FUNC_BODY.17=var v_ind2, v_self, v_id, v_ok;
+990016\DICMETAF.FUNC_BODY.18=v_ind2 := %ind + '  ';
+990016\DICMETAF.FUNC_BODY.19=for 'Данные' select [select FACE, RELATION, B_DATE, E_DATE, A_TYPE, A_NUM, A_DATE, A_END,
+990016\DICMETAF.FUNC_BODY.20=                     PERCENT_, POWER, INCOME_ACC, INCOME_REC, INCOME_ADR,
+990016\DICMETAF.FUNC_BODY.21=                     INCOME_VERBAL, NUMERATOR, DENOMINATOR
+990016\DICMETAF.FUNC_BODY.22=                     from OD_AFFILS
+990016\DICMETAF.FUNC_BODY.23=                     where CLIENT = :CLIENT
+990016\DICMETAF.FUNC_BODY.24=                     order by ID]
+990016\DICMETAF.FUNC_BODY.25=from %client_id
+990016\DICMETAF.FUNC_BODY.26=into FACE, RELATION, B_DATE, E_DATE, A_TYPE, A_NUM, A_DATE, A_END, PERCENT_, A_POWER,
+990016\DICMETAF.FUNC_BODY.27=     INCOME_ACC, INCOME_REC, INCOME_ADR, INCOME_VERBAL, NUMERATOR, DENOMINATOR
+990016\DICMETAF.FUNC_BODY.28=do
+990016\DICMETAF.FUNC_BODY.29=    v_ok := 0;
+990016\DICMETAF.FUNC_BODY.30=    v_self := _F_ENVLIGHT->ref_self(FACE);
+990016\DICMETAF.FUNC_BODY.31=    if ~IsBlank(v_self) then
+990016\DICMETAF.FUNC_BODY.32=        v_id := Trim(Str(v_self));
+990016\DICMETAF.FUNC_BODY.33=        if _F_ENVLIGHT->has(%seen, 'F' + v_id) = 1 then
+990016\DICMETAF.FUNC_BODY.34=            v_ok := 1;
+990016\DICMETAF.FUNC_BODY.35=        end;
+990016\DICMETAF.FUNC_BODY.36=    end;
+990016\DICMETAF.FUNC_BODY.37=    if v_ok = 1 then
+990016\DICMETAF.FUNC_BODY.38=        ListAdd(%lines, %ind + 'affiliate: &f' + v_id);
+990016\DICMETAF.FUNC_BODY.39=        _F_ENVLIGHT->put_n(%lines, v_ind2, 'RELATION', RELATION);
+990016\DICMETAF.FUNC_BODY.40=        _F_ENVLIGHT->put_d(%lines, v_ind2, 'B_DATE', B_DATE);
+990016\DICMETAF.FUNC_BODY.41=        _F_ENVLIGHT->put_d(%lines, v_ind2, 'E_DATE', E_DATE);
+990016\DICMETAF.FUNC_BODY.42=        _F_ENVLIGHT->put_n(%lines, v_ind2, 'A_TYPE', A_TYPE);
+990016\DICMETAF.FUNC_BODY.43=        _F_ENVLIGHT->put_s(%lines, v_ind2, 'A_NUM', A_NUM);
+990016\DICMETAF.FUNC_BODY.44=        _F_ENVLIGHT->put_d(%lines, v_ind2, 'A_DATE', A_DATE);
+990016\DICMETAF.FUNC_BODY.45=        _F_ENVLIGHT->put_d(%lines, v_ind2, 'A_END', A_END);
+990016\DICMETAF.FUNC_BODY.46=        _F_ENVLIGHT->put_z(%lines, v_ind2, 'PERCENT_', PERCENT_);
+990016\DICMETAF.FUNC_BODY.47=        _F_ENVLIGHT->put_n(%lines, v_ind2, 'POWER', A_POWER);
+990016\DICMETAF.FUNC_BODY.48=        _F_ENVLIGHT->put_a(%lines, v_ind2, 'INCOME_ACC', %seen, INCOME_ACC);
+990016\DICMETAF.FUNC_BODY.49=        _F_ENVLIGHT->put_s(%lines, v_ind2, 'INCOME_REC', INCOME_REC);
+990016\DICMETAF.FUNC_BODY.50=        _F_ENVLIGHT->put_s(%lines, v_ind2, 'INCOME_ADR', INCOME_ADR);
+990016\DICMETAF.FUNC_BODY.51=        _F_ENVLIGHT->put_s(%lines, v_ind2, 'INCOME_VERBAL', INCOME_VERBAL);
+990016\DICMETAF.FUNC_BODY.52=        _F_ENVLIGHT->put_n(%lines, v_ind2, 'NUMERATOR', NUMERATOR);
+990016\DICMETAF.FUNC_BODY.53=        _F_ENVLIGHT->put_n(%lines, v_ind2, 'DENOMINATOR', DENOMINATOR);
+990016\DICMETAF.FUNC_BODY.54=    else
+990016\DICMETAF.FUNC_BODY.55=        ListAdd(%lines, %ind + '# affiliate: лицо FACE=' + Trim(Str(FACE)) + ' не выгружено');
+990016\DICMETAF.FUNC_BODY.56=    end;
+990016\DICMETAF.FUNC_BODY.57=end
+990016\DICMETAF.FUNC_BODY.COUNT=58
+990016\DICMETAF.FUNC_HEADER.0=out_affiliates( %lines:LargeInt; %ind:Str; %seen:LargeInt;
+990016\DICMETAF.FUNC_HEADER.1=   %client_id:Int )
+990016\DICMETAF.FUNC_HEADER.COUNT=2
+990016\DICMETAF.FUNC_ID=out_affiliates
+990016\DICMETAF.IS_CANON=0
+990016\DICMETAF.IS_USER=1
+990016\DICMETAF.MD5_HASH=59709d7864b08979abd4c03d7d3ba97e
+990016\DICMETAF.MD5_STAMP=01.11.2026
+990017\DICMETAF.FORM_NUM=990000
+990017\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990017\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->out_bank( %lines:LargeInt; %seen:LargeInt; %self_id:Int )
+990017\DICMETAF.FUNC_BODY.02=   -----------------------------------------------------------------------------
+990017\DICMETAF.FUNC_BODY.03=   Выгрузить банк блоком "bank &f<SELF_ID>": лицо-юрлицо (текущая версия,
+990017\DICMETAF.FUNC_BODY.04=   поля как у face) плюс запись OD_BANKS (BIC, KORR, CITY, SWIFT, REG_NUM,
+990017\DICMETAF.FUNC_BODY.05=   IS_INSURANCE). Выгружается только текущая версия лица, историю с as_of
+990017\DICMETAF.FUNC_BODY.06=   выгрузка не пишет. Вложенных блоков у bank нет. Алиас тот же f<SELF_ID>,
+990017\DICMETAF.FUNC_BODY.07=   что и у обычного лица, поэтому ссылки на банк из других блоков одинаковы.
+990017\DICMETAF.FUNC_BODY.08=   BIC необязателен: банк без BIC (например, иностранный, только со SWIFT)
+990017\DICMETAF.FUNC_BODY.09=   выгружается как есть.
+990017\DICMETAF.FUNC_BODY.11=   Параметры:
+990017\DICMETAF.FUNC_BODY.12=     %lines   - список строк выгрузки;
+990017\DICMETAF.FUNC_BODY.13=     %seen    - список выгруженных объектов, дополняется;
+990017\DICMETAF.FUNC_BODY.14=     %self_id - SELF_ID лица-банка.
+990017\DICMETAF.FUNC_BODY.15=   ----------------------------------------------------------------------------- */
+990017\DICMETAF.FUNC_BODY.16=var ID, NAME, BIC, SWIFT, KORR, CITY, REG_NUM, IS_INSURANCE;
+990017\DICMETAF.FUNC_BODY.17=var v_ind;
+990017\DICMETAF.FUNC_BODY.18=v_ind := '  ';
+990017\DICMETAF.FUNC_BODY.19=for 'Данные' select [select F.ID, F.NAME, B.BIC, B.SWIFT, B.KORR, B.CITY, B.REG_NUM, B.IS_INSURANCE
+990017\DICMETAF.FUNC_BODY.20=                     from OD_FACES F
+990017\DICMETAF.FUNC_BODY.21=                          left join OD_BANKS B on B.U_FACE = F.SELF_ID
+990017\DICMETAF.FUNC_BODY.22=                     where F.SELF_ID = :SELF_ID and F.LAST_FLAG = 1]
+990017\DICMETAF.FUNC_BODY.23=from %self_id
+990017\DICMETAF.FUNC_BODY.24=into ID, NAME, BIC, SWIFT, KORR, CITY, REG_NUM, IS_INSURANCE
+990017\DICMETAF.FUNC_BODY.25=do
+990017\DICMETAF.FUNC_BODY.26=    ListAdd(%lines, '');
+990017\DICMETAF.FUNC_BODY.27=    ListAdd(%lines, '# ' + _F_ENVLIGHT->flat(NAME));
+990017\DICMETAF.FUNC_BODY.28=    ListAdd(%lines, 'bank &f' + Trim(Str(%self_id)));
+990017\DICMETAF.FUNC_BODY.29=    _F_ENVLIGHT->put_s(%lines, v_ind, 'BIC', BIC);
+990017\DICMETAF.FUNC_BODY.30=    _F_ENVLIGHT->out_face_common(%lines, v_ind, ID);
+990017\DICMETAF.FUNC_BODY.31=    _F_ENVLIGHT->out_face_juridical(%lines, v_ind, %seen, ID);
+990017\DICMETAF.FUNC_BODY.32=    _F_ENVLIGHT->put_s(%lines, v_ind, 'KORR', KORR);
+990017\DICMETAF.FUNC_BODY.33=    _F_ENVLIGHT->put_s(%lines, v_ind, 'CITY', CITY);
+990017\DICMETAF.FUNC_BODY.34=    _F_ENVLIGHT->put_s(%lines, v_ind, 'SWIFT', SWIFT);
+990017\DICMETAF.FUNC_BODY.35=    _F_ENVLIGHT->put_s(%lines, v_ind, 'REG_NUM', REG_NUM);
+990017\DICMETAF.FUNC_BODY.36=    _F_ENVLIGHT->put_z(%lines, v_ind, 'IS_INSURANCE', IS_INSURANCE);
+990017\DICMETAF.FUNC_BODY.37=end;
+990017\DICMETAF.FUNC_BODY.38=ListAdd(%seen, 'F' + Trim(Str(%self_id)))
+990017\DICMETAF.FUNC_BODY.COUNT=39
+990017\DICMETAF.FUNC_HEADER.0=out_bank( %lines:LargeInt; %seen:LargeInt; %self_id:Int )
+990017\DICMETAF.FUNC_HEADER.COUNT=1
+990017\DICMETAF.FUNC_ID=out_bank
+990017\DICMETAF.IS_CANON=0
+990017\DICMETAF.IS_USER=1
+990017\DICMETAF.MD5_HASH=ebc07adfd167168d7b924b892ef97f27
+990017\DICMETAF.MD5_STAMP=01.11.2026
+990018\DICMETAF.FORM_NUM=990000
+990018\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990018\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->out_client( %lines:LargeInt; %seen:LargeInt; %client_id:Int )
+990018\DICMETAF.FUNC_BODY.02=   -----------------------------------------------------------------------------
+990018\DICMETAF.FUNC_BODY.03=   Выгрузить лицевой счёт блоком "client &c<ID>: <вид счёта>": основные поля
+990018\DICMETAF.FUNC_BODY.04=   (out_client_main), текущие реквизиты (out_client_rec) и вложенные блоки
+990018\DICMETAF.FUNC_BODY.05=   affiliate (out_affiliates). Лица и банковские счета, на которые ссылается
+990018\DICMETAF.FUNC_BODY.06=   счёт, должны быть выгружены раньше (export_client это обеспечивает).
+990018\DICMETAF.FUNC_BODY.07=   Родительский счёт PARENT не выгружается: вместо поля пишется комментарий.
+990018\DICMETAF.FUNC_BODY.08=   В конце счёт отмечается в %seen ключом C<ID>.
+990018\DICMETAF.FUNC_BODY.10=   Параметры:
+990018\DICMETAF.FUNC_BODY.11=     %lines     - список строк выгрузки;
+990018\DICMETAF.FUNC_BODY.12=     %seen      - список выгруженных объектов, дополняется;
+990018\DICMETAF.FUNC_BODY.13=     %client_id - OD_CLIENTS.ID.
+990018\DICMETAF.FUNC_BODY.14=   ----------------------------------------------------------------------------- */
+990018\DICMETAF.FUNC_BODY.15=var NUMBER, SUBTYPE, NAME, PARENT;
+990018\DICMETAF.FUNC_BODY.16=var v_ind;
+990018\DICMETAF.FUNC_BODY.17=v_ind := '  ';
+990018\DICMETAF.FUNC_BODY.18=for 'Данные' select [select NUMBER, SUBTYPE, NAME, PARENT
+990018\DICMETAF.FUNC_BODY.19=                     from OD_CLIENTS
+990018\DICMETAF.FUNC_BODY.20=                     where ID = :ID]
+990018\DICMETAF.FUNC_BODY.21=from %client_id
+990018\DICMETAF.FUNC_BODY.22=into NUMBER, SUBTYPE, NAME, PARENT
+990018\DICMETAF.FUNC_BODY.23=do
+990018\DICMETAF.FUNC_BODY.24=    ListAdd(%lines, '');
+990018\DICMETAF.FUNC_BODY.25=    ListAdd(%lines, '# лицевой счёт ' + _F_ENVLIGHT->flat(NUMBER) + ' ' + _F_ENVLIGHT->flat(NAME));
+990018\DICMETAF.FUNC_BODY.26=    ListAdd(%lines, 'client &c' + Trim(Str(%client_id)) + ': ' + _F_ENVLIGHT->xwalk_REESTR_SUBTYPE(SUBTYPE));
+990018\DICMETAF.FUNC_BODY.27=    _F_ENVLIGHT->out_client_main(%lines, v_ind, %seen, %client_id);
+990018\DICMETAF.FUNC_BODY.28=    if ~IsBlank(PARENT) then
+990018\DICMETAF.FUNC_BODY.29=        ListAdd(%lines, v_ind + '# PARENT: родительский счёт ID=' + Trim(Str(PARENT)) + ' не выгружен');
+990018\DICMETAF.FUNC_BODY.30=    end;
+990018\DICMETAF.FUNC_BODY.31=    _F_ENVLIGHT->out_client_rec(%lines, v_ind, %seen, %client_id);
+990018\DICMETAF.FUNC_BODY.32=    _F_ENVLIGHT->out_affiliates(%lines, v_ind, %seen, %client_id);
+990018\DICMETAF.FUNC_BODY.33=end;
+990018\DICMETAF.FUNC_BODY.34=ListAdd(%seen, 'C' + Trim(Str(%client_id)))
+990018\DICMETAF.FUNC_BODY.COUNT=35
+990018\DICMETAF.FUNC_HEADER.0=out_client( %lines:LargeInt; %seen:LargeInt; %client_id:Int )
+990018\DICMETAF.FUNC_HEADER.COUNT=1
+990018\DICMETAF.FUNC_ID=out_client
+990018\DICMETAF.IS_CANON=0
+990018\DICMETAF.IS_USER=1
+990018\DICMETAF.MD5_HASH=c5e57bb2955b6c5f43815e938de3747f
+990018\DICMETAF.MD5_STAMP=01.11.2026
+990019\DICMETAF.FORM_NUM=990000
+990019\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990019\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->out_client_main( %lines:LargeInt; %ind:Str; %seen:LargeInt;
+990019\DICMETAF.FUNC_BODY.02=      %client_id:Int )
+990019\DICMETAF.FUNC_BODY.03=   -----------------------------------------------------------------------------
+990019\DICMETAF.FUNC_BODY.04=   Основные поля лицевого счёта из OD_CLIENTS, в именах параметров
+990019\DICMETAF.FUNC_BODY.05=   OD_PR_INSERT_CLIENT. Не выводятся: PLAN_ID и OPER (движок берёт их у
+990019\DICMETAF.FUNC_BODY.06=   оператора подключения), PARENT (обрабатывает out_client), PLACE (цепочка),
+990019\DICMETAF.FUNC_BODY.07=   служебные и неподдерживаемые env-light поля.
+990019\DICMETAF.FUNC_BODY.09=   Параметры:
+990019\DICMETAF.FUNC_BODY.10=     %lines - список строк выгрузки; %ind - отступ полей;
+990019\DICMETAF.FUNC_BODY.11=     %seen  - список выгруженных объектов;
+990019\DICMETAF.FUNC_BODY.12=     %client_id - OD_CLIENTS.ID.
+990019\DICMETAF.FUNC_BODY.13=   ----------------------------------------------------------------------------- */
+990019\DICMETAF.FUNC_BODY.14=var NUMBER, FACE, ISSUER, TYPE_, RELATION, IS_TERM, IS_MANAGER, IS_VOICE, IS_PRIV,
+990019\DICMETAF.FUNC_BODY.15=    IS_SOV, IS_BCLIENT, STATE, D_OPEN, D_CLOSE, NAME, DD_DATE, DD_NUM;
+990019\DICMETAF.FUNC_BODY.16=for 'Данные' select [select NUMBER, FACE, ISSUER, TYPE_, RELATION, IS_TERM, IS_MANAGER,
+990019\DICMETAF.FUNC_BODY.17=                     IS_VOICE, IS_PRIV, IS_SOV, IS_BCLIENT, STATE, D_OPEN, D_CLOSE,
+990019\DICMETAF.FUNC_BODY.18=                     NAME, DD_DATE, DD_NUM
+990019\DICMETAF.FUNC_BODY.19=                     from OD_CLIENTS
+990019\DICMETAF.FUNC_BODY.20=                     where ID = :ID]
+990019\DICMETAF.FUNC_BODY.21=from %client_id
+990019\DICMETAF.FUNC_BODY.22=into NUMBER, FACE, ISSUER, TYPE_, RELATION, IS_TERM, IS_MANAGER, IS_VOICE, IS_PRIV,
+990019\DICMETAF.FUNC_BODY.23=     IS_SOV, IS_BCLIENT, STATE, D_OPEN, D_CLOSE, NAME, DD_DATE, DD_NUM
+990019\DICMETAF.FUNC_BODY.24=do
+990019\DICMETAF.FUNC_BODY.25=    _F_ENVLIGHT->put_s(%lines, %ind, 'NUMBER', NUMBER);
+990019\DICMETAF.FUNC_BODY.26=    _F_ENVLIGHT->put_f(%lines, %ind, 'FACE', %seen, FACE);
+990019\DICMETAF.FUNC_BODY.27=    _F_ENVLIGHT->put_f(%lines, %ind, 'ISSUER', %seen, ISSUER);
+990019\DICMETAF.FUNC_BODY.28=    _F_ENVLIGHT->put_n(%lines, %ind, 'TYPE_', TYPE_);
+990019\DICMETAF.FUNC_BODY.29=    _F_ENVLIGHT->put_z(%lines, %ind, 'RELATION', RELATION);
+990019\DICMETAF.FUNC_BODY.30=    _F_ENVLIGHT->put_s(%lines, %ind, 'IS_TERM', IS_TERM);
+990019\DICMETAF.FUNC_BODY.31=    _F_ENVLIGHT->put_n(%lines, %ind, 'IS_MANAGER', IS_MANAGER);
+990019\DICMETAF.FUNC_BODY.32=    _F_ENVLIGHT->put_n(%lines, %ind, 'IS_VOICE', IS_VOICE);
+990019\DICMETAF.FUNC_BODY.33=    _F_ENVLIGHT->put_z(%lines, %ind, 'IS_PRIV', IS_PRIV);
+990019\DICMETAF.FUNC_BODY.34=    _F_ENVLIGHT->put_z(%lines, %ind, 'IS_SOV', IS_SOV);
+990019\DICMETAF.FUNC_BODY.35=    _F_ENVLIGHT->put_z(%lines, %ind, 'IS_BCLIENT', IS_BCLIENT);
+990019\DICMETAF.FUNC_BODY.36=    _F_ENVLIGHT->put_z(%lines, %ind, 'STATE', STATE);
+990019\DICMETAF.FUNC_BODY.37=    _F_ENVLIGHT->put_d(%lines, %ind, 'D_OPEN', D_OPEN);
+990019\DICMETAF.FUNC_BODY.38=    _F_ENVLIGHT->put_d(%lines, %ind, 'D_CLOSE', D_CLOSE);
+990019\DICMETAF.FUNC_BODY.39=    _F_ENVLIGHT->put_s(%lines, %ind, 'NAME', NAME);
+990019\DICMETAF.FUNC_BODY.40=    _F_ENVLIGHT->put_d(%lines, %ind, 'DD_DATE', DD_DATE);
+990019\DICMETAF.FUNC_BODY.41=    _F_ENVLIGHT->put_s(%lines, %ind, 'DD_NUM', DD_NUM);
+990019\DICMETAF.FUNC_BODY.42=end
+990019\DICMETAF.FUNC_BODY.COUNT=43
+990019\DICMETAF.FUNC_HEADER.0=out_client_main( %lines:LargeInt; %ind:Str; %seen:LargeInt;
+990019\DICMETAF.FUNC_HEADER.1=   %client_id:Int )
+990019\DICMETAF.FUNC_HEADER.COUNT=2
+990019\DICMETAF.FUNC_ID=out_client_main
+990019\DICMETAF.IS_CANON=0
+990019\DICMETAF.IS_USER=1
+990019\DICMETAF.MD5_HASH=2059cf92e90f62c4b598700fd9ae0e33
+990019\DICMETAF.MD5_STAMP=01.11.2026
+990020\DICMETAF.FORM_NUM=990000
+990020\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990020\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->out_client_rec( %lines:LargeInt; %ind:Str; %seen:LargeInt;
+990020\DICMETAF.FUNC_BODY.02=      %client_id:Int )
+990020\DICMETAF.FUNC_BODY.03=   -----------------------------------------------------------------------------
+990020\DICMETAF.FUNC_BODY.04=   Текущая запись реквизитов лицевого счёта из OD_CLIENTS_REC (версия с
+990020\DICMETAF.FUNC_BODY.05=   наибольшей B_DATE), в именах параметров OD_PR_INSERT_CLIENT. Банковский
+990020\DICMETAF.FUNC_BODY.06=   счёт INCOME_ACC пишется ссылкой <<&алиас>> (счёт выгружается раньше).
+990020\DICMETAF.FUNC_BODY.08=   Параметры:
+990020\DICMETAF.FUNC_BODY.09=     %lines - список строк выгрузки; %ind - отступ полей;
+990020\DICMETAF.FUNC_BODY.10=     %seen  - список выгруженных объектов;
+990020\DICMETAF.FUNC_BODY.11=     %client_id - OD_CLIENTS.ID.
+990020\DICMETAF.FUNC_BODY.12=   ----------------------------------------------------------------------------- */
+990020\DICMETAF.FUNC_BODY.13=var LINK_NUMBER, INCOME_MOD, INCOME_ACC, INCOME_ADR, INCOME_REC, INCOME_FACE,
+990020\DICMETAF.FUNC_BODY.14=    INCOME_VERBAL, O_MAIL_MOD, O_MAIL_ADR, I_MAIL_MOD, I_MAIL_ALT, I_MAIL_ADR, TARIF,
+990020\DICMETAF.FUNC_BODY.15=    EXTRA_INT, EXTRA_TYPE, IS_NZ, Z_DATE;
+990020\DICMETAF.FUNC_BODY.16=for 'Данные' select [select LINK_NUMBER, INCOME_MOD, INCOME_ACC, INCOME_ADR, INCOME_REC,
+990020\DICMETAF.FUNC_BODY.17=                     INCOME_FACE, INCOME_VERBAL, O_MAIL_MOD, O_MAIL_ADR, I_MAIL_MOD,
+990020\DICMETAF.FUNC_BODY.18=                     I_MAIL_ALT, I_MAIL_ADR, TARIF, EXTRA_INT, EXTRA_TYPE, IS_NZ,
+990020\DICMETAF.FUNC_BODY.19=                     Z_DATE
+990020\DICMETAF.FUNC_BODY.20=                     from OD_CLIENTS_REC
+990020\DICMETAF.FUNC_BODY.21=                     where CLIENT = :CLIENT
+990020\DICMETAF.FUNC_BODY.22=                           and B_DATE = (select max(R.B_DATE) from OD_CLIENTS_REC R
+990020\DICMETAF.FUNC_BODY.23=                                         where R.CLIENT = :R_CLIENT)]
+990020\DICMETAF.FUNC_BODY.24=from %client_id, %client_id
+990020\DICMETAF.FUNC_BODY.25=into LINK_NUMBER, INCOME_MOD, INCOME_ACC, INCOME_ADR, INCOME_REC, INCOME_FACE,
+990020\DICMETAF.FUNC_BODY.26=     INCOME_VERBAL, O_MAIL_MOD, O_MAIL_ADR, I_MAIL_MOD, I_MAIL_ALT, I_MAIL_ADR, TARIF,
+990020\DICMETAF.FUNC_BODY.27=     EXTRA_INT, EXTRA_TYPE, IS_NZ, Z_DATE
+990020\DICMETAF.FUNC_BODY.28=do
+990020\DICMETAF.FUNC_BODY.29=    _F_ENVLIGHT->put_s(%lines, %ind, 'LINK_NUMBER', LINK_NUMBER);
+990020\DICMETAF.FUNC_BODY.30=    _F_ENVLIGHT->put_z(%lines, %ind, 'INCOME_MOD', INCOME_MOD);
+990020\DICMETAF.FUNC_BODY.31=    _F_ENVLIGHT->put_a(%lines, %ind, 'INCOME_ACC', %seen, INCOME_ACC);
+990020\DICMETAF.FUNC_BODY.32=    _F_ENVLIGHT->put_s(%lines, %ind, 'INCOME_ADR', INCOME_ADR);
+990020\DICMETAF.FUNC_BODY.33=    _F_ENVLIGHT->put_s(%lines, %ind, 'INCOME_REC', INCOME_REC);
+990020\DICMETAF.FUNC_BODY.34=    _F_ENVLIGHT->put_f(%lines, %ind, 'INCOME_FACE', %seen, INCOME_FACE);
+990020\DICMETAF.FUNC_BODY.35=    _F_ENVLIGHT->put_s(%lines, %ind, 'INCOME_VERBAL', INCOME_VERBAL);
+990020\DICMETAF.FUNC_BODY.36=    _F_ENVLIGHT->put_z(%lines, %ind, 'O_MAIL_MOD', O_MAIL_MOD);
+990020\DICMETAF.FUNC_BODY.37=    _F_ENVLIGHT->put_s(%lines, %ind, 'O_MAIL_ADR', O_MAIL_ADR);
+990020\DICMETAF.FUNC_BODY.38=    _F_ENVLIGHT->put_z(%lines, %ind, 'I_MAIL_MOD', I_MAIL_MOD);
+990020\DICMETAF.FUNC_BODY.39=    _F_ENVLIGHT->put_z(%lines, %ind, 'I_MAIL_ALT', I_MAIL_ALT);
+990020\DICMETAF.FUNC_BODY.40=    _F_ENVLIGHT->put_s(%lines, %ind, 'I_MAIL_ADR', I_MAIL_ADR);
+990020\DICMETAF.FUNC_BODY.41=    _F_ENVLIGHT->put_s(%lines, %ind, 'TARIF', TARIF);
+990020\DICMETAF.FUNC_BODY.42=    _F_ENVLIGHT->put_n(%lines, %ind, 'EXTRA_INT', EXTRA_INT);
+990020\DICMETAF.FUNC_BODY.43=    _F_ENVLIGHT->put_n(%lines, %ind, 'EXTRA_TYPE', EXTRA_TYPE);
+990020\DICMETAF.FUNC_BODY.44=    _F_ENVLIGHT->put_z(%lines, %ind, 'IS_NZ', IS_NZ);
+990020\DICMETAF.FUNC_BODY.45=    _F_ENVLIGHT->put_d(%lines, %ind, 'Z_DATE', Z_DATE);
+990020\DICMETAF.FUNC_BODY.46=end
+990020\DICMETAF.FUNC_BODY.COUNT=47
+990020\DICMETAF.FUNC_HEADER.0=out_client_rec( %lines:LargeInt; %ind:Str; %seen:LargeInt;
+990020\DICMETAF.FUNC_HEADER.1=   %client_id:Int )
+990020\DICMETAF.FUNC_HEADER.COUNT=2
+990020\DICMETAF.FUNC_ID=out_client_rec
+990020\DICMETAF.IS_CANON=0
+990020\DICMETAF.IS_USER=1
+990020\DICMETAF.MD5_HASH=b1fb9da8e90f61684f5b2341ecabab0b
+990020\DICMETAF.MD5_STAMP=01.11.2026
+990021\DICMETAF.FORM_NUM=990000
+990021\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990021\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->out_face( %lines:LargeInt; %seen:LargeInt; %self_id:Int )
+990021\DICMETAF.FUNC_BODY.02=   -----------------------------------------------------------------------------
+990021\DICMETAF.FUNC_BODY.03=   Выгрузить лицо блоками env-light: "face &f<SELF_ID>: individual|juridical".
+990021\DICMETAF.FUNC_BODY.04=   Каждая версия лица - отдельный блок: первая без as_of, следующие с
+990021\DICMETAF.FUNC_BODY.05=   as_of=ГГГГ-ММ-ДД (дата начала версии). Вложенные блоки (code, activity,
+990021\DICMETAF.FUNC_BODY.06=   attorney) пишутся один раз, под первым блоком. Лицо, которое является
+990021\DICMETAF.FUNC_BODY.07=   банком (есть запись в OD_BANKS), выгружается блоком bank (out_bank).
+990021\DICMETAF.FUNC_BODY.08=   В конце лицо отмечается в %seen ключом F<SELF_ID>.
+990021\DICMETAF.FUNC_BODY.10=   Лица, на которые ссылается это лицо, должны быть выгружены раньше -
+990021\DICMETAF.FUNC_BODY.11=   порядок обеспечивает faces_emit.
+990021\DICMETAF.FUNC_BODY.13=   Параметры:
+990021\DICMETAF.FUNC_BODY.14=     %lines   - список строк выгрузки;
+990021\DICMETAF.FUNC_BODY.15=     %seen    - список выгруженных объектов, дополняется;
+990021\DICMETAF.FUNC_BODY.16=     %self_id - SELF_ID лица.
+990021\DICMETAF.FUNC_BODY.17=   ----------------------------------------------------------------------------- */
+990021\DICMETAF.FUNC_BODY.18=var ID, B_DATE, S_TYPE, NAME;
+990021\DICMETAF.FUNC_BODY.19=var v_alias, v_sub, v_n, v_ind, v_banks;
+990021\DICMETAF.FUNC_BODY.20=v_alias := 'f' + Trim(Str(%self_id));
+990021\DICMETAF.FUNC_BODY.21=v_ind := '  ';
+990021\DICMETAF.FUNC_BODY.22=v_banks := Extract('Данные', [select count(*) from OD_BANKS where U_FACE = :U_FACE], %self_id);
+990021\DICMETAF.FUNC_BODY.23=if v_banks > 0 then
+990021\DICMETAF.FUNC_BODY.24=    _F_ENVLIGHT->out_bank(%lines, %seen, %self_id);
+990021\DICMETAF.FUNC_BODY.25=else
+990021\DICMETAF.FUNC_BODY.26=    v_n := 0;
+990021\DICMETAF.FUNC_BODY.27=    for 'Данные' select [select ID, B_DATE, S_TYPE, NAME
+990021\DICMETAF.FUNC_BODY.28=                         from OD_FACES
+990021\DICMETAF.FUNC_BODY.29=                         where SELF_ID = :SELF_ID and B_DATE <> E_DATE
+990021\DICMETAF.FUNC_BODY.30=                         order by B_DATE]
+990021\DICMETAF.FUNC_BODY.31=    from %self_id
+990021\DICMETAF.FUNC_BODY.32=    into ID, B_DATE, S_TYPE, NAME
+990021\DICMETAF.FUNC_BODY.33=    do
+990021\DICMETAF.FUNC_BODY.34=        v_n := v_n + 1;
+990021\DICMETAF.FUNC_BODY.35=        v_sub := iif(S_TYPE = 0, 'individual', 'juridical');
+990021\DICMETAF.FUNC_BODY.36=        if v_n = 1 then
+990021\DICMETAF.FUNC_BODY.37=            ListAdd(%lines, '');
+990021\DICMETAF.FUNC_BODY.38=            ListAdd(%lines, '# ' + _F_ENVLIGHT->flat(NAME));
+990021\DICMETAF.FUNC_BODY.39=        end;
+990021\DICMETAF.FUNC_BODY.40=        ListAdd(%lines, 'face &' + v_alias + ': ' + v_sub);
+990021\DICMETAF.FUNC_BODY.41=        if v_n > 1 then
+990021\DICMETAF.FUNC_BODY.42=            ListAdd(%lines, v_ind + 'as_of=' + _F_ENVLIGHT->fmt_iso(B_DATE));
+990021\DICMETAF.FUNC_BODY.43=        end;
+990021\DICMETAF.FUNC_BODY.44=        _F_ENVLIGHT->out_face_common(%lines, v_ind, ID);
+990021\DICMETAF.FUNC_BODY.45=        if S_TYPE = 0 then
+990021\DICMETAF.FUNC_BODY.46=            _F_ENVLIGHT->out_face_individual(%lines, v_ind, ID);
+990021\DICMETAF.FUNC_BODY.47=        else
+990021\DICMETAF.FUNC_BODY.48=            _F_ENVLIGHT->out_face_juridical(%lines, v_ind, %seen, ID);
+990021\DICMETAF.FUNC_BODY.49=        end;
+990021\DICMETAF.FUNC_BODY.50=        if v_n = 1 then
+990021\DICMETAF.FUNC_BODY.51=            _F_ENVLIGHT->out_face_children(%lines, %seen, %self_id);
+990021\DICMETAF.FUNC_BODY.52=        end;
+990021\DICMETAF.FUNC_BODY.53=    end;
+990021\DICMETAF.FUNC_BODY.54=end;
+990021\DICMETAF.FUNC_BODY.55=ListAdd(%seen, 'F' + Trim(Str(%self_id)))
+990021\DICMETAF.FUNC_BODY.COUNT=56
+990021\DICMETAF.FUNC_HEADER.0=out_face( %lines:LargeInt; %seen:LargeInt; %self_id:Int )
+990021\DICMETAF.FUNC_HEADER.COUNT=1
+990021\DICMETAF.FUNC_ID=out_face
+990021\DICMETAF.IS_CANON=0
+990021\DICMETAF.IS_USER=1
+990021\DICMETAF.MD5_HASH=b77d390c3fdf2650573869716b64e488
+990021\DICMETAF.MD5_STAMP=01.11.2026
+990022\DICMETAF.FORM_NUM=990000
+990022\DICMETAF.FUNC_BODY.000=/* -----------------------------------------------------------------------------
+990022\DICMETAF.FUNC_BODY.001=   _F_ENVLIGHT->out_face_children( %lines:LargeInt; %seen:LargeInt; %self_id:Int )
+990022\DICMETAF.FUNC_BODY.002=   -----------------------------------------------------------------------------
+990022\DICMETAF.FUNC_BODY.003=   Вложенные блоки лица: code (коды у кодировщиков), activity (виды
+990022\DICMETAF.FUNC_BODY.004=   деятельности, лицензии), attorney (уполномоченные лица).
+990022\DICMETAF.FUNC_BODY.005=   Кодировщик и уполномоченный записываются ссылкой <<&алиас>>, поэтому
+990022\DICMETAF.FUNC_BODY.006=   соответствующие лица должны быть выгружены раньше (иначе вместо блока -
+990022\DICMETAF.FUNC_BODY.007=   комментарий). Уполномоченный без записи в справочнике лиц - блок attorney
+990022\DICMETAF.FUNC_BODY.008=   без ключа, с полем NAME.
+990022\DICMETAF.FUNC_BODY.010=   Параметры:
+990022\DICMETAF.FUNC_BODY.011=     %lines   - список строк выгрузки;
+990022\DICMETAF.FUNC_BODY.012=     %seen    - список выгруженных объектов;
+990022\DICMETAF.FUNC_BODY.013=     %self_id - SELF_ID лица-родителя.
+990022\DICMETAF.FUNC_BODY.014=   ----------------------------------------------------------------------------- */
+990022\DICMETAF.FUNC_BODY.015=var CODER, CODE;
+990022\DICMETAF.FUNC_BODY.016=var DIAL_MODE, NUM_LIC, BEG_LIC, END_LIC, PLACE_LIC;
+990022\DICMETAF.FUNC_BODY.017=var WORKER, NAME, BASIS, DUTY, B_DATE, E_DATE, A_TYPE, DOC_TYPE, DOC_SER, DOC_NUM,
+990022\DICMETAF.FUNC_BODY.018=    DOC_DAT, DOC_PLACE, RELATION, A_POWER, DOC_END, DOC_CODE;
+990022\DICMETAF.FUNC_BODY.019=var v_ind, v_ind2, v_self, v_id, v_ok;
+990022\DICMETAF.FUNC_BODY.020=v_ind := '  ';
+990022\DICMETAF.FUNC_BODY.021=v_ind2 := '    ';
+990022\DICMETAF.FUNC_BODY.022=/* коды у кодировщиков */
+990022\DICMETAF.FUNC_BODY.023=for 'Данные' select [select CODER, CODE
+990022\DICMETAF.FUNC_BODY.024=                     from OD_FACE_CODERS
+990022\DICMETAF.FUNC_BODY.025=                     where FACE = :FACE
+990022\DICMETAF.FUNC_BODY.026=                     order by CODER]
+990022\DICMETAF.FUNC_BODY.027=from %self_id
+990022\DICMETAF.FUNC_BODY.028=into CODER, CODE
+990022\DICMETAF.FUNC_BODY.029=do
+990022\DICMETAF.FUNC_BODY.030=    v_ok := 0;
+990022\DICMETAF.FUNC_BODY.031=    v_self := _F_ENVLIGHT->ref_self(CODER);
+990022\DICMETAF.FUNC_BODY.032=    if ~IsBlank(v_self) then
+990022\DICMETAF.FUNC_BODY.033=        v_id := Trim(Str(v_self));
+990022\DICMETAF.FUNC_BODY.034=        if _F_ENVLIGHT->has(%seen, 'F' + v_id) = 1 then
+990022\DICMETAF.FUNC_BODY.035=            v_ok := 1;
+990022\DICMETAF.FUNC_BODY.036=        end;
+990022\DICMETAF.FUNC_BODY.037=    end;
+990022\DICMETAF.FUNC_BODY.038=    if v_ok = 1 then
+990022\DICMETAF.FUNC_BODY.039=        ListAdd(%lines, v_ind + 'code: &f' + v_id);
+990022\DICMETAF.FUNC_BODY.040=        _F_ENVLIGHT->put_s(%lines, v_ind2, 'CODE', CODE);
+990022\DICMETAF.FUNC_BODY.041=    else
+990022\DICMETAF.FUNC_BODY.042=        ListAdd(%lines, v_ind + '# code: кодировщик CODER=' + Trim(Str(CODER)) + ' не выгружен');
+990022\DICMETAF.FUNC_BODY.043=    end;
+990022\DICMETAF.FUNC_BODY.044=end;
+990022\DICMETAF.FUNC_BODY.045=/* виды деятельности */
+990022\DICMETAF.FUNC_BODY.046=for 'Данные' select [select DIAL_MODE, NUM_LIC, BEG_LIC, END_LIC, PLACE_LIC
+990022\DICMETAF.FUNC_BODY.047=                     from OD_P_FACES
+990022\DICMETAF.FUNC_BODY.048=                     where FACE = :FACE
+990022\DICMETAF.FUNC_BODY.049=                     order by DIAL_MODE, BEG_LIC]
+990022\DICMETAF.FUNC_BODY.050=from %self_id
+990022\DICMETAF.FUNC_BODY.051=into DIAL_MODE, NUM_LIC, BEG_LIC, END_LIC, PLACE_LIC
+990022\DICMETAF.FUNC_BODY.052=do
+990022\DICMETAF.FUNC_BODY.053=    ListAdd(%lines, v_ind + 'activity: ' + _F_ENVLIGHT->xwalk_DIAL_MODE(DIAL_MODE));
+990022\DICMETAF.FUNC_BODY.054=    _F_ENVLIGHT->put_s(%lines, v_ind2, 'NUM_LIC', NUM_LIC);
+990022\DICMETAF.FUNC_BODY.055=    _F_ENVLIGHT->put_s(%lines, v_ind2, 'PLACE_LIC', PLACE_LIC);
+990022\DICMETAF.FUNC_BODY.056=    _F_ENVLIGHT->put_d(%lines, v_ind2, 'BEG_LIC', BEG_LIC);
+990022\DICMETAF.FUNC_BODY.057=    _F_ENVLIGHT->put_d(%lines, v_ind2, 'END_LIC', END_LIC);
+990022\DICMETAF.FUNC_BODY.058=end;
+990022\DICMETAF.FUNC_BODY.059=/* уполномоченные лица */
+990022\DICMETAF.FUNC_BODY.060=for 'Данные' select [select WORKER, NAME, BASIS, DUTY, B_DATE, E_DATE, A_TYPE, DOC_TYPE,
+990022\DICMETAF.FUNC_BODY.061=                            DOC_SER, DOC_NUM, DOC_DAT, DOC_PLACE, RELATION, POWER, DOC_END,
+990022\DICMETAF.FUNC_BODY.062=                            DOC_CODE
+990022\DICMETAF.FUNC_BODY.063=                     from OD_A_FACES
+990022\DICMETAF.FUNC_BODY.064=                     where FACE = :FACE and IS_A = 1
+990022\DICMETAF.FUNC_BODY.065=                     order by ID]
+990022\DICMETAF.FUNC_BODY.066=from %self_id
+990022\DICMETAF.FUNC_BODY.067=into WORKER, NAME, BASIS, DUTY, B_DATE, E_DATE, A_TYPE, DOC_TYPE,
+990022\DICMETAF.FUNC_BODY.068=     DOC_SER, DOC_NUM, DOC_DAT, DOC_PLACE, RELATION, A_POWER, DOC_END,
+990022\DICMETAF.FUNC_BODY.069=     DOC_CODE
+990022\DICMETAF.FUNC_BODY.070=do
+990022\DICMETAF.FUNC_BODY.071=    v_ok := 1;
+990022\DICMETAF.FUNC_BODY.072=    if IsBlank(WORKER) then
+990022\DICMETAF.FUNC_BODY.073=        ListAdd(%lines, v_ind + 'attorney');
+990022\DICMETAF.FUNC_BODY.074=    else
+990022\DICMETAF.FUNC_BODY.075=        v_ok := 0;
+990022\DICMETAF.FUNC_BODY.076=        v_self := _F_ENVLIGHT->ref_self(WORKER);
+990022\DICMETAF.FUNC_BODY.077=        if ~IsBlank(v_self) then
+990022\DICMETAF.FUNC_BODY.078=            v_id := Trim(Str(v_self));
+990022\DICMETAF.FUNC_BODY.079=            if _F_ENVLIGHT->has(%seen, 'F' + v_id) = 1 then
+990022\DICMETAF.FUNC_BODY.080=                v_ok := 1;
+990022\DICMETAF.FUNC_BODY.081=            end;
+990022\DICMETAF.FUNC_BODY.082=        end;
+990022\DICMETAF.FUNC_BODY.083=        if v_ok = 1 then
+990022\DICMETAF.FUNC_BODY.084=            ListAdd(%lines, v_ind + 'attorney: &f' + v_id);
+990022\DICMETAF.FUNC_BODY.085=        else
+990022\DICMETAF.FUNC_BODY.086=            ListAdd(%lines, v_ind + '# attorney: уполномоченный WORKER=' + Trim(Str(WORKER)) + ' не выгружен');
+990022\DICMETAF.FUNC_BODY.087=        end;
+990022\DICMETAF.FUNC_BODY.088=    end;
+990022\DICMETAF.FUNC_BODY.089=    if v_ok = 1 then
+990022\DICMETAF.FUNC_BODY.090=        _F_ENVLIGHT->put_s(%lines, v_ind2, 'NAME', NAME);
+990022\DICMETAF.FUNC_BODY.091=        _F_ENVLIGHT->put_s(%lines, v_ind2, 'DUTY', DUTY);
+990022\DICMETAF.FUNC_BODY.092=        _F_ENVLIGHT->put_s(%lines, v_ind2, 'BASIS', BASIS);
+990022\DICMETAF.FUNC_BODY.093=        _F_ENVLIGHT->put_d(%lines, v_ind2, 'B_DATE', B_DATE);
+990022\DICMETAF.FUNC_BODY.094=        _F_ENVLIGHT->put_d(%lines, v_ind2, 'E_DATE', E_DATE);
+990022\DICMETAF.FUNC_BODY.095=        _F_ENVLIGHT->put_z(%lines, v_ind2, 'A_TYPE', A_TYPE);
+990022\DICMETAF.FUNC_BODY.096=        _F_ENVLIGHT->put_z(%lines, v_ind2, 'DOC_TYPE', DOC_TYPE);
+990022\DICMETAF.FUNC_BODY.097=        _F_ENVLIGHT->put_s(%lines, v_ind2, 'DOC_SER', DOC_SER);
+990022\DICMETAF.FUNC_BODY.098=        _F_ENVLIGHT->put_s(%lines, v_ind2, 'DOC_NUM', DOC_NUM);
+990022\DICMETAF.FUNC_BODY.099=        _F_ENVLIGHT->put_d(%lines, v_ind2, 'DOC_DAT', DOC_DAT);
+990022\DICMETAF.FUNC_BODY.100=        _F_ENVLIGHT->put_s(%lines, v_ind2, 'DOC_PLACE', DOC_PLACE);
+990022\DICMETAF.FUNC_BODY.101=        _F_ENVLIGHT->put_s(%lines, v_ind2, 'DOC_CODE', DOC_CODE);
+990022\DICMETAF.FUNC_BODY.102=        _F_ENVLIGHT->put_d(%lines, v_ind2, 'DOC_END', DOC_END);
+990022\DICMETAF.FUNC_BODY.103=        _F_ENVLIGHT->put_n(%lines, v_ind2, 'RELATION', RELATION);
+990022\DICMETAF.FUNC_BODY.104=        _F_ENVLIGHT->put_n(%lines, v_ind2, 'POWER', A_POWER);
+990022\DICMETAF.FUNC_BODY.105=    end;
+990022\DICMETAF.FUNC_BODY.106=end
+990022\DICMETAF.FUNC_BODY.COUNT=107
+990022\DICMETAF.FUNC_HEADER.0=out_face_children( %lines:LargeInt; %seen:LargeInt; %self_id:Int )
+990022\DICMETAF.FUNC_HEADER.COUNT=1
+990022\DICMETAF.FUNC_ID=out_face_children
+990022\DICMETAF.IS_CANON=0
+990022\DICMETAF.IS_USER=1
+990022\DICMETAF.MD5_HASH=53b0eda2050d1050680859d17ba32b05
+990022\DICMETAF.MD5_STAMP=01.11.2026
+990023\DICMETAF.FORM_NUM=990000
+990023\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990023\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->out_face_common( %lines:LargeInt; %ind:Str; %id:Int )
+990023\DICMETAF.FUNC_BODY.02=   -----------------------------------------------------------------------------
+990023\DICMETAF.FUNC_BODY.03=   Поля версии лица из OD_FACES (общие для физлица и юрлица), в именах
+990023\DICMETAF.FUNC_BODY.04=   полей API_UPD_FACE. Не выводятся: ссылки на пользовательские справочники
+990023\DICMETAF.FUNC_BODY.05=   (BRANCHES), пути к файлам (IMAGEFILE), служебные поля.
+990023\DICMETAF.FUNC_BODY.07=   Параметры:
+990023\DICMETAF.FUNC_BODY.08=     %lines - список строк выгрузки; %ind - отступ полей;
+990023\DICMETAF.FUNC_BODY.09=     %id    - OD_FACES.ID версии лица.
+990023\DICMETAF.FUNC_BODY.10=   ----------------------------------------------------------------------------- */
+990023\DICMETAF.FUNC_BODY.11=var NAME, INN, TIN, KPP, MNEM, STATE, HOME_ADR, MAIL_ADR, FACT_ADR, HOME_KLADR,
+990023\DICMETAF.FUNC_BODY.12=    MAIL_KLADR, FACT_KLADR, EMAIL, PHONE, FAX, TELEX, REGN, IS_NERES, PROFILE, TAXIS,
+990023\DICMETAF.FUNC_BODY.13=    ENG_NAME, ENG_MAIL_ADR, DATE_DEPTH, DATE_BIRTH, DOC_TYPE, DOC_SER, DOC_NUM,
+990023\DICMETAF.FUNC_BODY.14=    DOC_DAT, DOC_END, DOC_PLACE, DOC_CODE;
+990023\DICMETAF.FUNC_BODY.15=for 'Данные' select [select NAME, INN, TIN, KPP, MNEM, STATE, HOME_ADR, MAIL_ADR, FACT_ADR,
+990023\DICMETAF.FUNC_BODY.16=                     HOME_KLADR, MAIL_KLADR, FACT_KLADR, EMAIL, PHONE, FAX, TELEX,
+990023\DICMETAF.FUNC_BODY.17=                     REGN, IS_NERES, PROFILE, TAXIS, ENG_NAME, ENG_MAIL_ADR,
+990023\DICMETAF.FUNC_BODY.18=                     DATE_DEPTH, DATE_BIRTH, DOC_TYPE, DOC_SER, DOC_NUM, DOC_DAT,
+990023\DICMETAF.FUNC_BODY.19=                     DOC_END, DOC_PLACE, DOC_CODE
+990023\DICMETAF.FUNC_BODY.20=                     from OD_FACES
+990023\DICMETAF.FUNC_BODY.21=                     where ID = :ID]
+990023\DICMETAF.FUNC_BODY.22=from %id
+990023\DICMETAF.FUNC_BODY.23=into NAME, INN, TIN, KPP, MNEM, STATE, HOME_ADR, MAIL_ADR, FACT_ADR, HOME_KLADR,
+990023\DICMETAF.FUNC_BODY.24=     MAIL_KLADR, FACT_KLADR, EMAIL, PHONE, FAX, TELEX, REGN, IS_NERES, PROFILE, TAXIS,
+990023\DICMETAF.FUNC_BODY.25=     ENG_NAME, ENG_MAIL_ADR, DATE_DEPTH, DATE_BIRTH, DOC_TYPE, DOC_SER, DOC_NUM,
+990023\DICMETAF.FUNC_BODY.26=     DOC_DAT, DOC_END, DOC_PLACE, DOC_CODE
+990023\DICMETAF.FUNC_BODY.27=do
+990023\DICMETAF.FUNC_BODY.28=    _F_ENVLIGHT->put_s(%lines, %ind, 'NAME', NAME);
+990023\DICMETAF.FUNC_BODY.29=    _F_ENVLIGHT->put_s(%lines, %ind, 'INN', INN);
+990023\DICMETAF.FUNC_BODY.30=    _F_ENVLIGHT->put_s(%lines, %ind, 'TIN', TIN);
+990023\DICMETAF.FUNC_BODY.31=    _F_ENVLIGHT->put_s(%lines, %ind, 'KPP', KPP);
+990023\DICMETAF.FUNC_BODY.32=    _F_ENVLIGHT->put_s(%lines, %ind, 'MNEM', MNEM);
+990023\DICMETAF.FUNC_BODY.33=    _F_ENVLIGHT->put_s(%lines, %ind, 'STATE', STATE);
+990023\DICMETAF.FUNC_BODY.34=    _F_ENVLIGHT->put_s(%lines, %ind, 'HOME_ADR', HOME_ADR);
+990023\DICMETAF.FUNC_BODY.35=    _F_ENVLIGHT->put_s(%lines, %ind, 'MAIL_ADR', MAIL_ADR);
+990023\DICMETAF.FUNC_BODY.36=    _F_ENVLIGHT->put_s(%lines, %ind, 'FACT_ADR', FACT_ADR);
+990023\DICMETAF.FUNC_BODY.37=    _F_ENVLIGHT->put_s(%lines, %ind, 'HOME_KLADR', HOME_KLADR);
+990023\DICMETAF.FUNC_BODY.38=    _F_ENVLIGHT->put_s(%lines, %ind, 'MAIL_KLADR', MAIL_KLADR);
+990023\DICMETAF.FUNC_BODY.39=    _F_ENVLIGHT->put_s(%lines, %ind, 'FACT_KLADR', FACT_KLADR);
+990023\DICMETAF.FUNC_BODY.40=    _F_ENVLIGHT->put_s(%lines, %ind, 'EMAIL', EMAIL);
+990023\DICMETAF.FUNC_BODY.41=    _F_ENVLIGHT->put_s(%lines, %ind, 'PHONE', PHONE);
+990023\DICMETAF.FUNC_BODY.42=    _F_ENVLIGHT->put_s(%lines, %ind, 'FAX', FAX);
+990023\DICMETAF.FUNC_BODY.43=    _F_ENVLIGHT->put_s(%lines, %ind, 'TELEX', TELEX);
+990023\DICMETAF.FUNC_BODY.44=    _F_ENVLIGHT->put_n(%lines, %ind, 'REGN', REGN);
+990023\DICMETAF.FUNC_BODY.45=    _F_ENVLIGHT->put_z(%lines, %ind, 'IS_NERES', IS_NERES);
+990023\DICMETAF.FUNC_BODY.46=    _F_ENVLIGHT->put_z(%lines, %ind, 'PROFILE', PROFILE);
+990023\DICMETAF.FUNC_BODY.47=    _F_ENVLIGHT->put_s(%lines, %ind, 'TAXIS', TAXIS);
+990023\DICMETAF.FUNC_BODY.48=    _F_ENVLIGHT->put_s(%lines, %ind, 'ENG_NAME', ENG_NAME);
+990023\DICMETAF.FUNC_BODY.49=    _F_ENVLIGHT->put_s(%lines, %ind, 'ENG_MAIL_ADR', ENG_MAIL_ADR);
+990023\DICMETAF.FUNC_BODY.50=    _F_ENVLIGHT->put_d(%lines, %ind, 'DATE_DEPTH', DATE_DEPTH);
+990023\DICMETAF.FUNC_BODY.51=    _F_ENVLIGHT->put_d(%lines, %ind, 'DATE_BIRTH', DATE_BIRTH);
+990023\DICMETAF.FUNC_BODY.52=    _F_ENVLIGHT->put_z(%lines, %ind, 'DOC_TYPE', DOC_TYPE);
+990023\DICMETAF.FUNC_BODY.53=    _F_ENVLIGHT->put_s(%lines, %ind, 'DOC_SER', DOC_SER);
+990023\DICMETAF.FUNC_BODY.54=    _F_ENVLIGHT->put_s(%lines, %ind, 'DOC_NUM', DOC_NUM);
+990023\DICMETAF.FUNC_BODY.55=    _F_ENVLIGHT->put_d(%lines, %ind, 'DOC_DAT', DOC_DAT);
+990023\DICMETAF.FUNC_BODY.56=    _F_ENVLIGHT->put_d(%lines, %ind, 'DOC_END', DOC_END);
+990023\DICMETAF.FUNC_BODY.57=    _F_ENVLIGHT->put_s(%lines, %ind, 'DOC_PLACE', DOC_PLACE);
+990023\DICMETAF.FUNC_BODY.58=    _F_ENVLIGHT->put_s(%lines, %ind, 'DOC_CODE', DOC_CODE);
+990023\DICMETAF.FUNC_BODY.59=end
+990023\DICMETAF.FUNC_BODY.COUNT=60
+990023\DICMETAF.FUNC_HEADER.0=out_face_common( %lines:LargeInt; %ind:Str; %id:Int )
+990023\DICMETAF.FUNC_HEADER.COUNT=1
+990023\DICMETAF.FUNC_ID=out_face_common
+990023\DICMETAF.IS_CANON=0
+990023\DICMETAF.IS_USER=1
+990023\DICMETAF.MD5_HASH=d42f52fc6fb5d1aff59cc49e439e2f82
+990023\DICMETAF.MD5_STAMP=01.11.2026
+990024\DICMETAF.FORM_NUM=990000
+990024\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990024\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->out_face_individual( %lines:LargeInt; %ind:Str; %id:Int )
+990024\DICMETAF.FUNC_BODY.02=   -----------------------------------------------------------------------------
+990024\DICMETAF.FUNC_BODY.03=   Поля версии физлица из OD_F_FACES, в именах полей API_UPD_FACE.
+990024\DICMETAF.FUNC_BODY.04=   Не выводится путь к фотографии (PHOTOFILE).
+990024\DICMETAF.FUNC_BODY.06=   Параметры:
+990024\DICMETAF.FUNC_BODY.07=     %lines - список строк выгрузки; %ind - отступ полей;
+990024\DICMETAF.FUNC_BODY.08=     %id    - OD_FACES.ID версии лица (OD_F_FACES.FACE).
+990024\DICMETAF.FUNC_BODY.09=   ----------------------------------------------------------------------------- */
+990024\DICMETAF.FUNC_BODY.10=var SEX, PHONE_WORK, PENSNUM, ID_ERN, BIRTHPLACE, FIRSTNAME, PATRONYMIC, LASTNAME,
+990024\DICMETAF.FUNC_BODY.11=    PUBMODE;
+990024\DICMETAF.FUNC_BODY.12=for 'Данные' select [select SEX, PHONE_WORK, PENSNUM, ID_ERN, BIRTHPLACE, FIRSTNAME,
+990024\DICMETAF.FUNC_BODY.13=                     PATRONYMIC, LASTNAME, PUBMODE
+990024\DICMETAF.FUNC_BODY.14=                     from OD_F_FACES
+990024\DICMETAF.FUNC_BODY.15=                     where FACE = :FACE]
+990024\DICMETAF.FUNC_BODY.16=from %id
+990024\DICMETAF.FUNC_BODY.17=into SEX, PHONE_WORK, PENSNUM, ID_ERN, BIRTHPLACE, FIRSTNAME, PATRONYMIC, LASTNAME,
+990024\DICMETAF.FUNC_BODY.18=     PUBMODE
+990024\DICMETAF.FUNC_BODY.19=do
+990024\DICMETAF.FUNC_BODY.20=    _F_ENVLIGHT->put_s(%lines, %ind, 'SEX', SEX);
+990024\DICMETAF.FUNC_BODY.21=    _F_ENVLIGHT->put_s(%lines, %ind, 'PHONE_WORK', PHONE_WORK);
+990024\DICMETAF.FUNC_BODY.22=    _F_ENVLIGHT->put_s(%lines, %ind, 'PENSNUM', PENSNUM);
+990024\DICMETAF.FUNC_BODY.23=    _F_ENVLIGHT->put_s(%lines, %ind, 'ID_ERN', ID_ERN);
+990024\DICMETAF.FUNC_BODY.24=    _F_ENVLIGHT->put_s(%lines, %ind, 'BIRTHPLACE', BIRTHPLACE);
+990024\DICMETAF.FUNC_BODY.25=    _F_ENVLIGHT->put_s(%lines, %ind, 'FIRSTNAME', FIRSTNAME);
+990024\DICMETAF.FUNC_BODY.26=    _F_ENVLIGHT->put_s(%lines, %ind, 'PATRONYMIC', PATRONYMIC);
+990024\DICMETAF.FUNC_BODY.27=    _F_ENVLIGHT->put_s(%lines, %ind, 'LASTNAME', LASTNAME);
+990024\DICMETAF.FUNC_BODY.28=    _F_ENVLIGHT->put_z(%lines, %ind, 'PUBMODE', PUBMODE);
+990024\DICMETAF.FUNC_BODY.29=end
+990024\DICMETAF.FUNC_BODY.COUNT=30
+990024\DICMETAF.FUNC_HEADER.0=out_face_individual( %lines:LargeInt; %ind:Str; %id:Int )
+990024\DICMETAF.FUNC_HEADER.COUNT=1
+990024\DICMETAF.FUNC_ID=out_face_individual
+990024\DICMETAF.IS_CANON=0
+990024\DICMETAF.IS_USER=1
+990024\DICMETAF.MD5_HASH=b256d6ef893b3de80ec3f3326073c325
+990024\DICMETAF.MD5_STAMP=01.11.2026
+990025\DICMETAF.FORM_NUM=990000
+990025\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990025\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->out_face_juridical( %lines:LargeInt; %ind:Str; %seen:LargeInt;
+990025\DICMETAF.FUNC_BODY.02=      %id:Int )
+990025\DICMETAF.FUNC_BODY.03=   -----------------------------------------------------------------------------
+990025\DICMETAF.FUNC_BODY.04=   Поля версии юрлица из OD_U_FACES, в именах полей API_UPD_FACE.
+990025\DICMETAF.FUNC_BODY.05=   Поля EXEC_ORGAN, NAL_ORGAN, DEPOT, REESTR - ссылки на лица, пишутся как
+990025\DICMETAF.FUNC_BODY.06=   <<ИМЯ=&алиас>> (лица к этому моменту уже выгружены).
+990025\DICMETAF.FUNC_BODY.08=   Параметры:
+990025\DICMETAF.FUNC_BODY.09=     %lines - список строк выгрузки; %ind - отступ полей;
+990025\DICMETAF.FUNC_BODY.10=     %seen  - список выгруженных объектов;
+990025\DICMETAF.FUNC_BODY.11=     %id    - OD_FACES.ID версии лица (OD_U_FACES.FACE).
+990025\DICMETAF.FUNC_BODY.12=   ----------------------------------------------------------------------------- */
+990025\DICMETAF.FUNC_BODY.13=var FULL_NAME, ENG_FULL_NAME, OPF, OKPO, OKONX, OGRN, OGRN_DATE, OGRN_PLACE, OKOGU,
+990025\DICMETAF.FUNC_BODY.14=    OKATO, FS, CAPITAL, ENSURNUM, DEP_NUM, DEP_DAT, DEPOT, REESTR, EXEC_ORGAN,
+990025\DICMETAF.FUNC_BODY.15=    NAL_ORGAN, DOL_1, FIO_1, TEL_1, OSN_1, DOL_2, FIO_2, TEL_2, OSN_2, DOL_OTV,
+990025\DICMETAF.FUNC_BODY.16=    FIO_OTV, TEL_OTV, FIO_BUG, TEL_BUG;
+990025\DICMETAF.FUNC_BODY.17=for 'Данные' select [select FULL_NAME, ENG_FULL_NAME, OPF, OKPO, OKONX, OGRN, OGRN_DATE,
+990025\DICMETAF.FUNC_BODY.18=                     OGRN_PLACE, OKOGU, OKATO, FS, CAPITAL, ENSURNUM, DEP_NUM,
+990025\DICMETAF.FUNC_BODY.19=                     DEP_DAT, DEPOT, REESTR, EXEC_ORGAN, NAL_ORGAN, DOL_1, FIO_1,
+990025\DICMETAF.FUNC_BODY.20=                     TEL_1, OSN_1, DOL_2, FIO_2, TEL_2, OSN_2, DOL_OTV, FIO_OTV,
+990025\DICMETAF.FUNC_BODY.21=                     TEL_OTV, FIO_BUG, TEL_BUG
+990025\DICMETAF.FUNC_BODY.22=                     from OD_U_FACES
+990025\DICMETAF.FUNC_BODY.23=                     where FACE = :FACE]
+990025\DICMETAF.FUNC_BODY.24=from %id
+990025\DICMETAF.FUNC_BODY.25=into FULL_NAME, ENG_FULL_NAME, OPF, OKPO, OKONX, OGRN, OGRN_DATE, OGRN_PLACE, OKOGU,
+990025\DICMETAF.FUNC_BODY.26=     OKATO, FS, CAPITAL, ENSURNUM, DEP_NUM, DEP_DAT, DEPOT, REESTR, EXEC_ORGAN,
+990025\DICMETAF.FUNC_BODY.27=     NAL_ORGAN, DOL_1, FIO_1, TEL_1, OSN_1, DOL_2, FIO_2, TEL_2, OSN_2, DOL_OTV,
+990025\DICMETAF.FUNC_BODY.28=     FIO_OTV, TEL_OTV, FIO_BUG, TEL_BUG
+990025\DICMETAF.FUNC_BODY.29=do
+990025\DICMETAF.FUNC_BODY.30=    _F_ENVLIGHT->put_s(%lines, %ind, 'FULL_NAME', FULL_NAME);
+990025\DICMETAF.FUNC_BODY.31=    _F_ENVLIGHT->put_s(%lines, %ind, 'ENG_FULL_NAME', ENG_FULL_NAME);
+990025\DICMETAF.FUNC_BODY.32=    _F_ENVLIGHT->put_s(%lines, %ind, 'OPF', OPF);
+990025\DICMETAF.FUNC_BODY.33=    _F_ENVLIGHT->put_s(%lines, %ind, 'OKPO', OKPO);
+990025\DICMETAF.FUNC_BODY.34=    _F_ENVLIGHT->put_s(%lines, %ind, 'OKONX', OKONX);
+990025\DICMETAF.FUNC_BODY.35=    _F_ENVLIGHT->put_s(%lines, %ind, 'OGRN', OGRN);
+990025\DICMETAF.FUNC_BODY.36=    _F_ENVLIGHT->put_d(%lines, %ind, 'OGRN_DATE', OGRN_DATE);
+990025\DICMETAF.FUNC_BODY.37=    _F_ENVLIGHT->put_s(%lines, %ind, 'OGRN_PLACE', OGRN_PLACE);
+990025\DICMETAF.FUNC_BODY.38=    _F_ENVLIGHT->put_s(%lines, %ind, 'OKOGU', OKOGU);
+990025\DICMETAF.FUNC_BODY.39=    _F_ENVLIGHT->put_s(%lines, %ind, 'OKATO', OKATO);
+990025\DICMETAF.FUNC_BODY.40=    _F_ENVLIGHT->put_n(%lines, %ind, 'FS', FS);
+990025\DICMETAF.FUNC_BODY.41=    _F_ENVLIGHT->put_n(%lines, %ind, 'CAPITAL', CAPITAL);
+990025\DICMETAF.FUNC_BODY.42=    _F_ENVLIGHT->put_s(%lines, %ind, 'ENSURNUM', ENSURNUM);
+990025\DICMETAF.FUNC_BODY.43=    _F_ENVLIGHT->put_s(%lines, %ind, 'DEP_NUM', DEP_NUM);
+990025\DICMETAF.FUNC_BODY.44=    _F_ENVLIGHT->put_d(%lines, %ind, 'DEP_DAT', DEP_DAT);
+990025\DICMETAF.FUNC_BODY.45=    _F_ENVLIGHT->put_f(%lines, %ind, 'DEPOT', %seen, DEPOT);
+990025\DICMETAF.FUNC_BODY.46=    _F_ENVLIGHT->put_f(%lines, %ind, 'REESTR', %seen, REESTR);
+990025\DICMETAF.FUNC_BODY.47=    _F_ENVLIGHT->put_f(%lines, %ind, 'EXEC_ORGAN', %seen, EXEC_ORGAN);
+990025\DICMETAF.FUNC_BODY.48=    _F_ENVLIGHT->put_f(%lines, %ind, 'NAL_ORGAN', %seen, NAL_ORGAN);
+990025\DICMETAF.FUNC_BODY.49=    _F_ENVLIGHT->put_s(%lines, %ind, 'DOL_1', DOL_1);
+990025\DICMETAF.FUNC_BODY.50=    _F_ENVLIGHT->put_s(%lines, %ind, 'FIO_1', FIO_1);
+990025\DICMETAF.FUNC_BODY.51=    _F_ENVLIGHT->put_s(%lines, %ind, 'TEL_1', TEL_1);
+990025\DICMETAF.FUNC_BODY.52=    _F_ENVLIGHT->put_s(%lines, %ind, 'OSN_1', OSN_1);
+990025\DICMETAF.FUNC_BODY.53=    _F_ENVLIGHT->put_s(%lines, %ind, 'DOL_2', DOL_2);
+990025\DICMETAF.FUNC_BODY.54=    _F_ENVLIGHT->put_s(%lines, %ind, 'FIO_2', FIO_2);
+990025\DICMETAF.FUNC_BODY.55=    _F_ENVLIGHT->put_s(%lines, %ind, 'TEL_2', TEL_2);
+990025\DICMETAF.FUNC_BODY.56=    _F_ENVLIGHT->put_s(%lines, %ind, 'OSN_2', OSN_2);
+990025\DICMETAF.FUNC_BODY.57=    _F_ENVLIGHT->put_s(%lines, %ind, 'DOL_OTV', DOL_OTV);
+990025\DICMETAF.FUNC_BODY.58=    _F_ENVLIGHT->put_s(%lines, %ind, 'FIO_OTV', FIO_OTV);
+990025\DICMETAF.FUNC_BODY.59=    _F_ENVLIGHT->put_s(%lines, %ind, 'TEL_OTV', TEL_OTV);
+990025\DICMETAF.FUNC_BODY.60=    _F_ENVLIGHT->put_s(%lines, %ind, 'FIO_BUG', FIO_BUG);
+990025\DICMETAF.FUNC_BODY.61=    _F_ENVLIGHT->put_s(%lines, %ind, 'TEL_BUG', TEL_BUG);
+990025\DICMETAF.FUNC_BODY.62=end
+990025\DICMETAF.FUNC_BODY.COUNT=63
+990025\DICMETAF.FUNC_HEADER.0=out_face_juridical( %lines:LargeInt; %ind:Str; %seen:LargeInt;
+990025\DICMETAF.FUNC_HEADER.1=   %id:Int )
+990025\DICMETAF.FUNC_HEADER.COUNT=2
+990025\DICMETAF.FUNC_ID=out_face_juridical
+990025\DICMETAF.IS_CANON=0
+990025\DICMETAF.IS_USER=1
+990025\DICMETAF.MD5_HASH=062eefad00e04b3cc86d6e4eba4a87f1
+990025\DICMETAF.MD5_STAMP=01.11.2026
+990026\DICMETAF.FORM_NUM=990000
+990026\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990026\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->out_share( %lines:LargeInt; %seen:LargeInt; %share_id:Int )
+990026\DICMETAF.FUNC_BODY.02=   -----------------------------------------------------------------------------
+990026\DICMETAF.FUNC_BODY.03=   Выгрузить финансовый инструмент блоками "share &s<ID>: <вид>". Каждая
+990026\DICMETAF.FUNC_BODY.04=   версия (OD_SHARES) - отдельный блок: первая без as_of, следующие с
+990026\DICMETAF.FUNC_BODY.05=   as_of=ГГГГ-ММ-ДД. В первом блоке - SYSNAME и эмитент ISSUER (ссылка на лицо),
+990026\DICMETAF.FUNC_BODY.06=   поля OD_VALUES (MFU, IS_IN) и, для паёв, ID_TYPE фонда. В каждом блоке -
+990026\DICMETAF.FUNC_BODY.07=   NAME, ISIN, CFI на дату версии, поля OD_SHARES и поля таблицы вида
+990026\DICMETAF.FUNC_BODY.08=   инструмента: акции и паи (1, 10) - OD_A_SHARES, облигации и банковские
+990026\DICMETAF.FUNC_BODY.09=   сертификаты (2, 6) - OD_O_SHARES, векселя (3) - OD_V_SHARES, опционы,
+990026\DICMETAF.FUNC_BODY.10=   фьючерсы и депозитарные расписки (4, 5, 7) - OD_T_SHARES.
+990026\DICMETAF.FUNC_BODY.11=   Лица, на которые ссылается инструмент, должны быть выгружены раньше.
+990026\DICMETAF.FUNC_BODY.12=   В конце инструмент отмечается в %seen ключом S<ID>.
+990026\DICMETAF.FUNC_BODY.14=   Параметры:
+990026\DICMETAF.FUNC_BODY.15=     %lines    - список строк выгрузки;
+990026\DICMETAF.FUNC_BODY.16=     %seen     - список выгруженных объектов, дополняется;
+990026\DICMETAF.FUNC_BODY.17=     %share_id - SELF_ID инструмента (OD_VALUES.ID).
+990026\DICMETAF.FUNC_BODY.18=   ----------------------------------------------------------------------------- */
+990026\DICMETAF.FUNC_BODY.19=var ID, B_DATE, CLASS, ISSUER, ID_TYPE;
+990026\DICMETAF.FUNC_BODY.20=var v_alias, v_n, v_ind;
+990026\DICMETAF.FUNC_BODY.21=v_alias := 's' + Trim(Str(%share_id));
+990026\DICMETAF.FUNC_BODY.22=v_ind := '  ';
+990026\DICMETAF.FUNC_BODY.23=v_n := 0;
+990026\DICMETAF.FUNC_BODY.24=for 'Данные' select [select ID, B_DATE, CLASS, ISSUER
+990026\DICMETAF.FUNC_BODY.25=                     from OD_SHARES
+990026\DICMETAF.FUNC_BODY.26=                     where SELF_ID = :SELF_ID and B_DATE <> E_DATE
+990026\DICMETAF.FUNC_BODY.27=                     order by B_DATE]
+990026\DICMETAF.FUNC_BODY.28=from %share_id
+990026\DICMETAF.FUNC_BODY.29=into ID, B_DATE, CLASS, ISSUER
+990026\DICMETAF.FUNC_BODY.30=do
+990026\DICMETAF.FUNC_BODY.31=    v_n := v_n + 1;
+990026\DICMETAF.FUNC_BODY.32=    if v_n = 1 then
+990026\DICMETAF.FUNC_BODY.33=        ListAdd(%lines, '');
+990026\DICMETAF.FUNC_BODY.34=        ListAdd(%lines, '# финансовый инструмент SELF_ID=' + Trim(Str(%share_id)));
+990026\DICMETAF.FUNC_BODY.35=    end;
+990026\DICMETAF.FUNC_BODY.36=    ListAdd(%lines, 'share &' + v_alias + ': ' + _F_ENVLIGHT->xwalk_SHARE_CLASS(CLASS));
+990026\DICMETAF.FUNC_BODY.37=    if v_n > 1 then
+990026\DICMETAF.FUNC_BODY.38=        ListAdd(%lines, v_ind + 'as_of=' + _F_ENVLIGHT->fmt_iso(B_DATE));
+990026\DICMETAF.FUNC_BODY.39=    end;
+990026\DICMETAF.FUNC_BODY.40=    if v_n = 1 then
+990026\DICMETAF.FUNC_BODY.41=        _F_ENVLIGHT->out_share_values(%lines, v_ind, %share_id);
+990026\DICMETAF.FUNC_BODY.42=        _F_ENVLIGHT->put_f(%lines, v_ind, 'ISSUER', %seen, ISSUER);
+990026\DICMETAF.FUNC_BODY.43=        if CLASS = 10 then
+990026\DICMETAF.FUNC_BODY.44=            ID_TYPE := Extract('Данные', [select max(ID_TYPE) from OD_FUNDS where U_FACE = :U_FACE], ISSUER);
+990026\DICMETAF.FUNC_BODY.45=            _F_ENVLIGHT->put_n(%lines, v_ind, 'ID_TYPE', ID_TYPE);
+990026\DICMETAF.FUNC_BODY.46=        end;
+990026\DICMETAF.FUNC_BODY.47=    end;
+990026\DICMETAF.FUNC_BODY.48=    _F_ENVLIGHT->out_share_opts(%lines, v_ind, %share_id, B_DATE);
+990026\DICMETAF.FUNC_BODY.49=    _F_ENVLIGHT->out_share_main(%lines, v_ind, %seen, ID);
+990026\DICMETAF.FUNC_BODY.50=    if (CLASS = 1) or (CLASS = 10) then
+990026\DICMETAF.FUNC_BODY.51=        _F_ENVLIGHT->out_share_a(%lines, v_ind, ID);
+990026\DICMETAF.FUNC_BODY.52=    elsif (CLASS = 2) or (CLASS = 6) then
+990026\DICMETAF.FUNC_BODY.53=        _F_ENVLIGHT->out_share_o(%lines, v_ind, %seen, ID);
+990026\DICMETAF.FUNC_BODY.54=    elsif CLASS = 3 then
+990026\DICMETAF.FUNC_BODY.55=        _F_ENVLIGHT->out_share_v(%lines, v_ind, %seen, ID);
+990026\DICMETAF.FUNC_BODY.56=    elsif (CLASS = 4) or (CLASS = 5) or (CLASS = 7) then
+990026\DICMETAF.FUNC_BODY.57=        _F_ENVLIGHT->out_share_t(%lines, v_ind, %seen, ID);
+990026\DICMETAF.FUNC_BODY.58=    end;
+990026\DICMETAF.FUNC_BODY.59=end;
+990026\DICMETAF.FUNC_BODY.60=ListAdd(%seen, 'S' + Trim(Str(%share_id)))
+990026\DICMETAF.FUNC_BODY.COUNT=61
+990026\DICMETAF.FUNC_HEADER.0=out_share( %lines:LargeInt; %seen:LargeInt; %share_id:Int )
+990026\DICMETAF.FUNC_HEADER.COUNT=1
+990026\DICMETAF.FUNC_ID=out_share
+990026\DICMETAF.IS_CANON=0
+990026\DICMETAF.IS_USER=1
+990026\DICMETAF.MD5_HASH=7981e5d317fffbe3522b299a1116ea67
+990026\DICMETAF.MD5_STAMP=01.11.2026
+990027\DICMETAF.FORM_NUM=990000
+990027\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990027\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->out_share_a( %lines:LargeInt; %ind:Str; %id:Int )
+990027\DICMETAF.FUNC_BODY.02=   -----------------------------------------------------------------------------
+990027\DICMETAF.FUNC_BODY.03=   Поля акции/пая из OD_A_SHARES (права по акциям).
+990027\DICMETAF.FUNC_BODY.05=   Параметры: %lines, %ind - как выше; %id - OD_SHARES.ID версии.
+990027\DICMETAF.FUNC_BODY.06=   ----------------------------------------------------------------------------- */
+990027\DICMETAF.FUNC_BODY.07=var VOICECOUNT, MAXSHARE, MAXVOICE, MAXNOMINAL, DIVID_TYPE, DIVID_RATE, DIVID_PERIOD,
+990027\DICMETAF.FUNC_BODY.08=    RIGHTS_SET;
+990027\DICMETAF.FUNC_BODY.09=for 'Данные' select [select VOICECOUNT, MAXSHARE, MAXVOICE, MAXNOMINAL, DIVID_TYPE,
+990027\DICMETAF.FUNC_BODY.10=                     DIVID_RATE, DIVID_PERIOD, RIGHTS_SET
+990027\DICMETAF.FUNC_BODY.11=                     from OD_A_SHARES
+990027\DICMETAF.FUNC_BODY.12=                     where SHARE = :SHARE]
+990027\DICMETAF.FUNC_BODY.13=from %id
+990027\DICMETAF.FUNC_BODY.14=into VOICECOUNT, MAXSHARE, MAXVOICE, MAXNOMINAL, DIVID_TYPE, DIVID_RATE, DIVID_PERIOD,
+990027\DICMETAF.FUNC_BODY.15=     RIGHTS_SET
+990027\DICMETAF.FUNC_BODY.16=do
+990027\DICMETAF.FUNC_BODY.17=    _F_ENVLIGHT->put_n(%lines, %ind, 'VOICECOUNT', VOICECOUNT);
+990027\DICMETAF.FUNC_BODY.18=    _F_ENVLIGHT->put_n(%lines, %ind, 'MAXSHARE', MAXSHARE);
+990027\DICMETAF.FUNC_BODY.19=    _F_ENVLIGHT->put_n(%lines, %ind, 'MAXVOICE', MAXVOICE);
+990027\DICMETAF.FUNC_BODY.20=    _F_ENVLIGHT->put_n(%lines, %ind, 'MAXNOMINAL', MAXNOMINAL);
+990027\DICMETAF.FUNC_BODY.21=    _F_ENVLIGHT->put_z(%lines, %ind, 'DIVID_TYPE', DIVID_TYPE);
+990027\DICMETAF.FUNC_BODY.22=    _F_ENVLIGHT->put_z(%lines, %ind, 'DIVID_RATE', DIVID_RATE);
+990027\DICMETAF.FUNC_BODY.23=    _F_ENVLIGHT->put_n(%lines, %ind, 'DIVID_PERIOD', DIVID_PERIOD);
+990027\DICMETAF.FUNC_BODY.24=    _F_ENVLIGHT->put_z(%lines, %ind, 'RIGHTS_SET', RIGHTS_SET);
+990027\DICMETAF.FUNC_BODY.25=end
+990027\DICMETAF.FUNC_BODY.COUNT=26
+990027\DICMETAF.FUNC_HEADER.0=out_share_a( %lines:LargeInt; %ind:Str; %id:Int )
+990027\DICMETAF.FUNC_HEADER.COUNT=1
+990027\DICMETAF.FUNC_ID=out_share_a
+990027\DICMETAF.IS_CANON=0
+990027\DICMETAF.IS_USER=1
+990027\DICMETAF.MD5_HASH=8ed14493c5d992a693f5fa62c017ec16
+990027\DICMETAF.MD5_STAMP=01.11.2026
+990028\DICMETAF.FORM_NUM=990000
+990028\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990028\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->out_share_main( %lines:LargeInt; %ind:Str; %seen:LargeInt;
+990028\DICMETAF.FUNC_BODY.02=      %id:Int )
+990028\DICMETAF.FUNC_BODY.03=   -----------------------------------------------------------------------------
+990028\DICMETAF.FUNC_BODY.04=   Поля версии финансового инструмента из OD_SHARES, в именах полей
+990028\DICMETAF.FUNC_BODY.05=   API_UPD_SHARE. Вид инструмента (CLASS) и эмитент (ISSUER) пишутся в
+990028\DICMETAF.FUNC_BODY.06=   заголовок блока и поле out_share. Код валюты номинала NOM_VAL выводится
+990028\DICMETAF.FUNC_BODY.07=   числом, только если он не равен базовой валюте базы. Не выводится LINK.
+990028\DICMETAF.FUNC_BODY.09=   Параметры:
+990028\DICMETAF.FUNC_BODY.10=     %lines - список строк выгрузки; %ind - отступ полей;
+990028\DICMETAF.FUNC_BODY.11=     %seen  - список выгруженных объектов;
+990028\DICMETAF.FUNC_BODY.12=     %id    - OD_SHARES.ID версии.
+990028\DICMETAF.FUNC_BODY.13=   ----------------------------------------------------------------------------- */
+990028\DICMETAF.FUNC_BODY.14=var MNEM, BIRTHDATE, DEATHDATE, DATE_REG, MODE, NOMINAL, COUNT_, ISNUM, NUM_REG,
+990028\DICMETAF.FUNC_BODY.15=    NOM_VAL, ORG_REG, ISSUENUM, TYPE_, STATUS, PMFU, IS_MCS, IS_MARGIN, NOM_TYPE,
+990028\DICMETAF.FUNC_BODY.16=    REP_DATE, BASE_CURR;
+990028\DICMETAF.FUNC_BODY.17=for 'Данные' select [select MNEM, BIRTHDATE, DEATHDATE, DATE_REG, MODE, NOMINAL, COUNT_,
+990028\DICMETAF.FUNC_BODY.18=                     ISNUM, NUM_REG, NOM_VAL, ORG_REG, ISSUENUM, TYPE_, STATUS, PMFU,
+990028\DICMETAF.FUNC_BODY.19=                     IS_MCS, IS_MARGIN, NOM_TYPE, REP_DATE,
+990028\DICMETAF.FUNC_BODY.20=                     (select VALUE_ID from OD_PR_BASE_ID) as BASE_CURR
+990028\DICMETAF.FUNC_BODY.21=                     from OD_SHARES
+990028\DICMETAF.FUNC_BODY.22=                     where ID = :ID]
+990028\DICMETAF.FUNC_BODY.23=from %id
+990028\DICMETAF.FUNC_BODY.24=into MNEM, BIRTHDATE, DEATHDATE, DATE_REG, MODE, NOMINAL, COUNT_, ISNUM, NUM_REG,
+990028\DICMETAF.FUNC_BODY.25=     NOM_VAL, ORG_REG, ISSUENUM, TYPE_, STATUS, PMFU, IS_MCS, IS_MARGIN, NOM_TYPE,
+990028\DICMETAF.FUNC_BODY.26=     REP_DATE, BASE_CURR
+990028\DICMETAF.FUNC_BODY.27=do
+990028\DICMETAF.FUNC_BODY.28=    _F_ENVLIGHT->put_s(%lines, %ind, 'MNEM', MNEM);
+990028\DICMETAF.FUNC_BODY.29=    _F_ENVLIGHT->put_d(%lines, %ind, 'BIRTHDATE', BIRTHDATE);
+990028\DICMETAF.FUNC_BODY.30=    _F_ENVLIGHT->put_d(%lines, %ind, 'DEATHDATE', DEATHDATE);
+990028\DICMETAF.FUNC_BODY.31=    _F_ENVLIGHT->put_d(%lines, %ind, 'DATE_REG', DATE_REG);
+990028\DICMETAF.FUNC_BODY.32=    _F_ENVLIGHT->put_n(%lines, %ind, 'MODE', MODE);
+990028\DICMETAF.FUNC_BODY.33=    _F_ENVLIGHT->put_n(%lines, %ind, 'NOMINAL', NOMINAL);
+990028\DICMETAF.FUNC_BODY.34=    _F_ENVLIGHT->put_n(%lines, %ind, 'COUNT_', COUNT_);
+990028\DICMETAF.FUNC_BODY.35=    _F_ENVLIGHT->put_s(%lines, %ind, 'ISNUM', ISNUM);
+990028\DICMETAF.FUNC_BODY.36=    _F_ENVLIGHT->put_s(%lines, %ind, 'NUM_REG', NUM_REG);
+990028\DICMETAF.FUNC_BODY.37=    if ~IsBlank(NOM_VAL) then
+990028\DICMETAF.FUNC_BODY.38=        if NOM_VAL <> BASE_CURR then
+990028\DICMETAF.FUNC_BODY.39=            _F_ENVLIGHT->put_n(%lines, %ind, 'NOM_VAL', NOM_VAL);
+990028\DICMETAF.FUNC_BODY.40=        end;
+990028\DICMETAF.FUNC_BODY.41=    end;
+990028\DICMETAF.FUNC_BODY.42=    _F_ENVLIGHT->put_f(%lines, %ind, 'ORG_REG', %seen, ORG_REG);
+990028\DICMETAF.FUNC_BODY.43=    _F_ENVLIGHT->put_n(%lines, %ind, 'ISSUENUM', ISSUENUM);
+990028\DICMETAF.FUNC_BODY.44=    _F_ENVLIGHT->put_z(%lines, %ind, 'TYPE_', TYPE_);
+990028\DICMETAF.FUNC_BODY.45=    _F_ENVLIGHT->put_n(%lines, %ind, 'STATUS', STATUS);
+990028\DICMETAF.FUNC_BODY.46=    _F_ENVLIGHT->put_n(%lines, %ind, 'PMFU', PMFU);
+990028\DICMETAF.FUNC_BODY.47=    _F_ENVLIGHT->put_z(%lines, %ind, 'IS_MCS', IS_MCS);
+990028\DICMETAF.FUNC_BODY.48=    _F_ENVLIGHT->put_z(%lines, %ind, 'IS_MARGIN', IS_MARGIN);
+990028\DICMETAF.FUNC_BODY.49=    _F_ENVLIGHT->put_z(%lines, %ind, 'NOM_TYPE', NOM_TYPE);
+990028\DICMETAF.FUNC_BODY.50=    _F_ENVLIGHT->put_d(%lines, %ind, 'REP_DATE', REP_DATE);
+990028\DICMETAF.FUNC_BODY.51=end
+990028\DICMETAF.FUNC_BODY.COUNT=52
+990028\DICMETAF.FUNC_HEADER.0=out_share_main( %lines:LargeInt; %ind:Str; %seen:LargeInt;
+990028\DICMETAF.FUNC_HEADER.1=   %id:Int )
+990028\DICMETAF.FUNC_HEADER.COUNT=2
+990028\DICMETAF.FUNC_ID=out_share_main
+990028\DICMETAF.IS_CANON=0
+990028\DICMETAF.IS_USER=1
+990028\DICMETAF.MD5_HASH=5f0c620dfd6678b37134926c7d4d69e4
+990028\DICMETAF.MD5_STAMP=01.11.2026
+990029\DICMETAF.FORM_NUM=990000
+990029\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990029\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->out_share_o( %lines:LargeInt; %ind:Str; %seen:LargeInt; %id:Int )
+990029\DICMETAF.FUNC_BODY.02=   -----------------------------------------------------------------------------
+990029\DICMETAF.FUNC_BODY.03=   Поля облигации/банковского сертификата из OD_O_SHARES. GUARANTOR и
+990029\DICMETAF.FUNC_BODY.04=   IMMO_COVER - ссылки на лица (<<&алиас>>).
+990029\DICMETAF.FUNC_BODY.06=   Параметры: %lines, %ind, %seen - как выше; %id - OD_SHARES.ID версии.
+990029\DICMETAF.FUNC_BODY.07=   ----------------------------------------------------------------------------- */
+990029\DICMETAF.FUNC_BODY.08=var IS_SAVE, IS_CONV, PERIOD, DAYS, PERCENT_, PRICE, STAVKA, PERIOD_M, IS_GG, NKD_MFU,
+990029\DICMETAF.FUNC_BODY.09=    P_MODEL, IS_EUR_BOND, IS_CLEAR, IS_JUNIOR, IS_SERT, NKD_RT, GUARANTOR, IMMO_COVER,
+990029\DICMETAF.FUNC_BODY.10=    DOC_DAT, DOC_NUM, D_NOMIN, D_OWNER, DEBTOR, MORTGAGER, SN_IS_OFFER, SN_A_CLASS,
+990029\DICMETAF.FUNC_BODY.11=    SN_CP_PRC, SN_MIN_DX_PRC, SN_MAX_DX_PRC;
+990029\DICMETAF.FUNC_BODY.12=for 'Данные' select [select IS_SAVE, IS_CONV, PERIOD, DAYS, PERCENT_, PRICE, STAVKA,
+990029\DICMETAF.FUNC_BODY.13=                     PERIOD_M, IS_GG, NKD_MFU, P_MODEL, IS_EUR_BOND, IS_CLEAR,
+990029\DICMETAF.FUNC_BODY.14=                     IS_JUNIOR, IS_SERT, NKD_RT, GUARANTOR, IMMO_COVER, DOC_DAT,
+990029\DICMETAF.FUNC_BODY.15=                     DOC_NUM, D_NOMIN, D_OWNER, DEBTOR, MORTGAGER, SN_IS_OFFER,
+990029\DICMETAF.FUNC_BODY.16=                     SN_A_CLASS, SN_CP_PRC, SN_MIN_DX_PRC, SN_MAX_DX_PRC
+990029\DICMETAF.FUNC_BODY.17=                     from OD_O_SHARES
+990029\DICMETAF.FUNC_BODY.18=                     where SHARE = :SHARE]
+990029\DICMETAF.FUNC_BODY.19=from %id
+990029\DICMETAF.FUNC_BODY.20=into IS_SAVE, IS_CONV, PERIOD, DAYS, PERCENT_, PRICE, STAVKA, PERIOD_M, IS_GG, NKD_MFU,
+990029\DICMETAF.FUNC_BODY.21=     P_MODEL, IS_EUR_BOND, IS_CLEAR, IS_JUNIOR, IS_SERT, NKD_RT, GUARANTOR, IMMO_COVER,
+990029\DICMETAF.FUNC_BODY.22=     DOC_DAT, DOC_NUM, D_NOMIN, D_OWNER, DEBTOR, MORTGAGER, SN_IS_OFFER, SN_A_CLASS,
+990029\DICMETAF.FUNC_BODY.23=     SN_CP_PRC, SN_MIN_DX_PRC, SN_MAX_DX_PRC
+990029\DICMETAF.FUNC_BODY.24=do
+990029\DICMETAF.FUNC_BODY.25=    _F_ENVLIGHT->put_n(%lines, %ind, 'IS_SAVE', IS_SAVE);
+990029\DICMETAF.FUNC_BODY.26=    _F_ENVLIGHT->put_n(%lines, %ind, 'IS_CONV', IS_CONV);
+990029\DICMETAF.FUNC_BODY.27=    _F_ENVLIGHT->put_n(%lines, %ind, 'PERIOD', PERIOD);
+990029\DICMETAF.FUNC_BODY.28=    _F_ENVLIGHT->put_n(%lines, %ind, 'DAYS', DAYS);
+990029\DICMETAF.FUNC_BODY.29=    _F_ENVLIGHT->put_n(%lines, %ind, 'PERCENT_', PERCENT_);
+990029\DICMETAF.FUNC_BODY.30=    _F_ENVLIGHT->put_n(%lines, %ind, 'PRICE', PRICE);
+990029\DICMETAF.FUNC_BODY.31=    _F_ENVLIGHT->put_n(%lines, %ind, 'STAVKA', STAVKA);
+990029\DICMETAF.FUNC_BODY.32=    _F_ENVLIGHT->put_n(%lines, %ind, 'PERIOD_M', PERIOD_M);
+990029\DICMETAF.FUNC_BODY.33=    _F_ENVLIGHT->put_n(%lines, %ind, 'IS_GG', IS_GG);
+990029\DICMETAF.FUNC_BODY.34=    _F_ENVLIGHT->put_n(%lines, %ind, 'NKD_MFU', NKD_MFU);
+990029\DICMETAF.FUNC_BODY.35=    _F_ENVLIGHT->put_n(%lines, %ind, 'P_MODEL', P_MODEL);
+990029\DICMETAF.FUNC_BODY.36=    _F_ENVLIGHT->put_n(%lines, %ind, 'IS_EUR_BOND', IS_EUR_BOND);
+990029\DICMETAF.FUNC_BODY.37=    _F_ENVLIGHT->put_n(%lines, %ind, 'IS_CLEAR', IS_CLEAR);
+990029\DICMETAF.FUNC_BODY.38=    _F_ENVLIGHT->put_n(%lines, %ind, 'IS_JUNIOR', IS_JUNIOR);
+990029\DICMETAF.FUNC_BODY.39=    _F_ENVLIGHT->put_n(%lines, %ind, 'IS_SERT', IS_SERT);
+990029\DICMETAF.FUNC_BODY.40=    _F_ENVLIGHT->put_n(%lines, %ind, 'NKD_RT', NKD_RT);
+990029\DICMETAF.FUNC_BODY.41=    _F_ENVLIGHT->put_f(%lines, %ind, 'GUARANTOR', %seen, GUARANTOR);
+990029\DICMETAF.FUNC_BODY.42=    _F_ENVLIGHT->put_f(%lines, %ind, 'IMMO_COVER', %seen, IMMO_COVER);
+990029\DICMETAF.FUNC_BODY.43=    _F_ENVLIGHT->put_d(%lines, %ind, 'DOC_DAT', DOC_DAT);
+990029\DICMETAF.FUNC_BODY.44=    _F_ENVLIGHT->put_s(%lines, %ind, 'DOC_NUM', DOC_NUM);
+990029\DICMETAF.FUNC_BODY.45=    _F_ENVLIGHT->put_s(%lines, %ind, 'D_NOMIN', D_NOMIN);
+990029\DICMETAF.FUNC_BODY.46=    _F_ENVLIGHT->put_s(%lines, %ind, 'D_OWNER', D_OWNER);
+990029\DICMETAF.FUNC_BODY.47=    _F_ENVLIGHT->put_s(%lines, %ind, 'DEBTOR', DEBTOR);
+990029\DICMETAF.FUNC_BODY.48=    _F_ENVLIGHT->put_s(%lines, %ind, 'MORTGAGER', MORTGAGER);
+990029\DICMETAF.FUNC_BODY.49=    _F_ENVLIGHT->put_n(%lines, %ind, 'SN_IS_OFFER', SN_IS_OFFER);
+990029\DICMETAF.FUNC_BODY.50=    _F_ENVLIGHT->put_n(%lines, %ind, 'SN_A_CLASS', SN_A_CLASS);
+990029\DICMETAF.FUNC_BODY.51=    _F_ENVLIGHT->put_n(%lines, %ind, 'SN_CP_PRC', SN_CP_PRC);
+990029\DICMETAF.FUNC_BODY.52=    _F_ENVLIGHT->put_n(%lines, %ind, 'SN_MIN_DX_PRC', SN_MIN_DX_PRC);
+990029\DICMETAF.FUNC_BODY.53=    _F_ENVLIGHT->put_n(%lines, %ind, 'SN_MAX_DX_PRC', SN_MAX_DX_PRC);
+990029\DICMETAF.FUNC_BODY.54=end
+990029\DICMETAF.FUNC_BODY.COUNT=55
+990029\DICMETAF.FUNC_HEADER.0=out_share_o( %lines:LargeInt; %ind:Str; %seen:LargeInt; %id:Int )
+990029\DICMETAF.FUNC_HEADER.COUNT=1
+990029\DICMETAF.FUNC_ID=out_share_o
+990029\DICMETAF.IS_CANON=0
+990029\DICMETAF.IS_USER=1
+990029\DICMETAF.MD5_HASH=b0456d7e56dc056f3f6599195772c4dc
+990029\DICMETAF.MD5_STAMP=01.11.2026
+990030\DICMETAF.FORM_NUM=990000
+990030\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990030\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->out_share_opts( %lines:LargeInt; %ind:Str; %share_id:Int;
+990030\DICMETAF.FUNC_BODY.02=      %b_date:Date )
+990030\DICMETAF.FUNC_BODY.03=   -----------------------------------------------------------------------------
+990030\DICMETAF.FUNC_BODY.04=   Исторические поля инструмента NAME, ISIN, CFI на дату начала версии:
+990030\DICMETAF.FUNC_BODY.05=   значение берётся из исторических опций (OD_OPTIONS), а при их отсутствии -
+990030\DICMETAF.FUNC_BODY.06=   из OD_VALUES (то же правило, что в API_UPD_SHARE).
+990030\DICMETAF.FUNC_BODY.08=   Параметры:
+990030\DICMETAF.FUNC_BODY.09=     %lines, %ind - как выше; %share_id - OD_VALUES.ID (SELF_ID);
+990030\DICMETAF.FUNC_BODY.10=     %b_date - дата начала версии (OD_SHARES.B_DATE).
+990030\DICMETAF.FUNC_BODY.11=   ----------------------------------------------------------------------------- */
+990030\DICMETAF.FUNC_BODY.12=var v_name, v_isin, v_cfi;
+990030\DICMETAF.FUNC_BODY.13=v_name := Extract('Данные', [select coalesce(O.VAL, V.NAME)
+990030\DICMETAF.FUNC_BODY.14=                       from OD_VALUES V
+990030\DICMETAF.FUNC_BODY.15=                            left join OD_DOC_CATS C on C.SYS_NAME = 'OD_SHARES'
+990030\DICMETAF.FUNC_BODY.16=                            left join OP_FIELDS F on F.OP = C.ID and F.AS_NAME = 'S_NAME'
+990030\DICMETAF.FUNC_BODY.17=                            left join OD_OPTIONS O on O.OBJECT = V.ID and O.DESCR = F.ID
+990030\DICMETAF.FUNC_BODY.18=                                                  and O.B_DATE <= :B_DATE and O.E_DATE > :E_DATE
+990030\DICMETAF.FUNC_BODY.19=                       where V.ID = :ID],
+990030\DICMETAF.FUNC_BODY.20=                  %b_date, %b_date, %share_id);
+990030\DICMETAF.FUNC_BODY.21=v_isin := Extract('Данные', [select coalesce(O.VAL, V.ISIN)
+990030\DICMETAF.FUNC_BODY.22=                       from OD_VALUES V
+990030\DICMETAF.FUNC_BODY.23=                            left join OD_DOC_CATS C on C.SYS_NAME = 'OD_SHARES'
+990030\DICMETAF.FUNC_BODY.24=                            left join OP_FIELDS F on F.OP = C.ID and F.AS_NAME = 'ISIN'
+990030\DICMETAF.FUNC_BODY.25=                            left join OD_OPTIONS O on O.OBJECT = V.ID and O.DESCR = F.ID
+990030\DICMETAF.FUNC_BODY.26=                                                  and O.B_DATE <= :B_DATE and O.E_DATE > :E_DATE
+990030\DICMETAF.FUNC_BODY.27=                       where V.ID = :ID],
+990030\DICMETAF.FUNC_BODY.28=                  %b_date, %b_date, %share_id);
+990030\DICMETAF.FUNC_BODY.29=v_cfi := Extract('Данные', [select coalesce(O.VAL, V.CFI)
+990030\DICMETAF.FUNC_BODY.30=                       from OD_VALUES V
+990030\DICMETAF.FUNC_BODY.31=                            left join OD_DOC_CATS C on C.SYS_NAME = 'OD_SHARES'
+990030\DICMETAF.FUNC_BODY.32=                            left join OP_FIELDS F on F.OP = C.ID and F.AS_NAME = 'CFI'
+990030\DICMETAF.FUNC_BODY.33=                            left join OD_OPTIONS O on O.OBJECT = V.ID and O.DESCR = F.ID
+990030\DICMETAF.FUNC_BODY.34=                                                  and O.B_DATE <= :B_DATE and O.E_DATE > :E_DATE
+990030\DICMETAF.FUNC_BODY.35=                       where V.ID = :ID],
+990030\DICMETAF.FUNC_BODY.36=                 %b_date, %b_date, %share_id);
+990030\DICMETAF.FUNC_BODY.37=_F_ENVLIGHT->put_s(%lines, %ind, 'NAME', v_name);
+990030\DICMETAF.FUNC_BODY.38=_F_ENVLIGHT->put_s(%lines, %ind, 'ISIN', v_isin);
+990030\DICMETAF.FUNC_BODY.39=_F_ENVLIGHT->put_s(%lines, %ind, 'CFI', v_cfi)
+990030\DICMETAF.FUNC_BODY.COUNT=40
+990030\DICMETAF.FUNC_HEADER.0=out_share_opts( %lines:LargeInt; %ind:Str; %share_id:Int;
+990030\DICMETAF.FUNC_HEADER.1=   %b_date:Date )
+990030\DICMETAF.FUNC_HEADER.COUNT=2
+990030\DICMETAF.FUNC_ID=out_share_opts
+990030\DICMETAF.IS_CANON=0
+990030\DICMETAF.IS_USER=1
+990030\DICMETAF.MD5_HASH=5f04908e0541a94118c0ff5636ff1413
+990030\DICMETAF.MD5_STAMP=01.11.2026
+990031\DICMETAF.FORM_NUM=990000
+990031\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990031\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->out_share_t( %lines:LargeInt; %ind:Str; %seen:LargeInt; %id:Int )
+990031\DICMETAF.FUNC_BODY.02=   -----------------------------------------------------------------------------
+990031\DICMETAF.FUNC_BODY.03=   Поля производного инструмента (опцион, фьючерс, депозитарная расписка)
+990031\DICMETAF.FUNC_BODY.04=   из OD_T_SHARES. BANK - ссылка на лицо (<<&алиас>>). Коды валют VALUTA и
+990031\DICMETAF.FUNC_BODY.05=   STEP_VAL выводятся числом, только если не равны базовой валюте базы.
+990031\DICMETAF.FUNC_BODY.07=   Параметры: %lines, %ind, %seen - как выше; %id - OD_SHARES.ID версии.
+990031\DICMETAF.FUNC_BODY.08=   ----------------------------------------------------------------------------- */
+990031\DICMETAF.FUNC_BODY.09=var AMOUNT, PRICE, VALUTA, IS_VARGIN, IS_CLEAR, BANK, STEP_VAL, STEP_MIN, STEP_PRICE,
+990031\DICMETAF.FUNC_BODY.10=    STRIKE1, STRIKE2, KU, KZK, STYLE, BASE_CURR;
+990031\DICMETAF.FUNC_BODY.11=for 'Данные' select [select AMOUNT, PRICE, VALUTA, IS_VARGIN, IS_CLEAR, BANK, STEP_VAL,
+990031\DICMETAF.FUNC_BODY.12=                     STEP_MIN, STEP_PRICE, STRIKE1, STRIKE2, KU, KZK, STYLE,
+990031\DICMETAF.FUNC_BODY.13=                     (select VALUE_ID from OD_PR_BASE_ID) as BASE_CURR
+990031\DICMETAF.FUNC_BODY.14=                     from OD_T_SHARES
+990031\DICMETAF.FUNC_BODY.15=                     where SHARE = :SHARE]
+990031\DICMETAF.FUNC_BODY.16=from %id
+990031\DICMETAF.FUNC_BODY.17=into AMOUNT, PRICE, VALUTA, IS_VARGIN, IS_CLEAR, BANK, STEP_VAL, STEP_MIN, STEP_PRICE,
+990031\DICMETAF.FUNC_BODY.18=     STRIKE1, STRIKE2, KU, KZK, STYLE, BASE_CURR
+990031\DICMETAF.FUNC_BODY.19=do
+990031\DICMETAF.FUNC_BODY.20=    _F_ENVLIGHT->put_n(%lines, %ind, 'AMOUNT', AMOUNT);
+990031\DICMETAF.FUNC_BODY.21=    _F_ENVLIGHT->put_n(%lines, %ind, 'PRICE', PRICE);
+990031\DICMETAF.FUNC_BODY.22=    if ~IsBlank(VALUTA) then
+990031\DICMETAF.FUNC_BODY.23=        if VALUTA <> BASE_CURR then
+990031\DICMETAF.FUNC_BODY.24=            _F_ENVLIGHT->put_n(%lines, %ind, 'VALUTA', VALUTA);
+990031\DICMETAF.FUNC_BODY.25=        end;
+990031\DICMETAF.FUNC_BODY.26=    end;
+990031\DICMETAF.FUNC_BODY.27=    _F_ENVLIGHT->put_z(%lines, %ind, 'IS_VARGIN', IS_VARGIN);
+990031\DICMETAF.FUNC_BODY.28=    _F_ENVLIGHT->put_z(%lines, %ind, 'IS_CLEAR', IS_CLEAR);
+990031\DICMETAF.FUNC_BODY.29=    _F_ENVLIGHT->put_f(%lines, %ind, 'BANK', %seen, BANK);
+990031\DICMETAF.FUNC_BODY.30=    if ~IsBlank(STEP_VAL) then
+990031\DICMETAF.FUNC_BODY.31=        if STEP_VAL <> BASE_CURR then
+990031\DICMETAF.FUNC_BODY.32=            _F_ENVLIGHT->put_n(%lines, %ind, 'STEP_VAL', STEP_VAL);
+990031\DICMETAF.FUNC_BODY.33=        end;
+990031\DICMETAF.FUNC_BODY.34=    end;
+990031\DICMETAF.FUNC_BODY.35=    _F_ENVLIGHT->put_n(%lines, %ind, 'STEP_MIN', STEP_MIN);
+990031\DICMETAF.FUNC_BODY.36=    _F_ENVLIGHT->put_n(%lines, %ind, 'STEP_PRICE', STEP_PRICE);
+990031\DICMETAF.FUNC_BODY.37=    _F_ENVLIGHT->put_n(%lines, %ind, 'STRIKE1', STRIKE1);
+990031\DICMETAF.FUNC_BODY.38=    _F_ENVLIGHT->put_n(%lines, %ind, 'STRIKE2', STRIKE2);
+990031\DICMETAF.FUNC_BODY.39=    _F_ENVLIGHT->put_n(%lines, %ind, 'KU', KU);
+990031\DICMETAF.FUNC_BODY.40=    _F_ENVLIGHT->put_n(%lines, %ind, 'KZK', KZK);
+990031\DICMETAF.FUNC_BODY.41=    _F_ENVLIGHT->put_n(%lines, %ind, 'STYLE', STYLE);
+990031\DICMETAF.FUNC_BODY.42=end
+990031\DICMETAF.FUNC_BODY.COUNT=43
+990031\DICMETAF.FUNC_HEADER.0=out_share_t( %lines:LargeInt; %ind:Str; %seen:LargeInt; %id:Int )
+990031\DICMETAF.FUNC_HEADER.COUNT=1
+990031\DICMETAF.FUNC_ID=out_share_t
+990031\DICMETAF.IS_CANON=0
+990031\DICMETAF.IS_USER=1
+990031\DICMETAF.MD5_HASH=ce53f04cb12241368fd739641c76b6d2
+990031\DICMETAF.MD5_STAMP=01.11.2026
+990032\DICMETAF.FORM_NUM=990000
+990032\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990032\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->out_share_v( %lines:LargeInt; %ind:Str; %seen:LargeInt; %id:Int )
+990032\DICMETAF.FUNC_BODY.02=   -----------------------------------------------------------------------------
+990032\DICMETAF.FUNC_BODY.03=   Поля векселя из OD_V_SHARES. TRASSANT, REMITENT, TRASSAT, AVELIST - ссылки
+990032\DICMETAF.FUNC_BODY.04=   на лица (<<&алиас>>).
+990032\DICMETAF.FUNC_BODY.06=   Параметры: %lines, %ind, %seen - как выше; %id - OD_SHARES.ID версии.
+990032\DICMETAF.FUNC_BODY.07=   ----------------------------------------------------------------------------- */
+990032\DICMETAF.FUNC_BODY.08=var IS_ACCEPT, IS_PASS, TRASSANT, REMITENT, TRASSAT, AVELIST, BIRTHPLACE, DEATHPLACE,
+990032\DICMETAF.FUNC_BODY.09=    PERCENT_, P_DATE, P_END, STOP_DATE, IN_NOM_VAL;
+990032\DICMETAF.FUNC_BODY.10=for 'Данные' select [select IS_ACCEPT, IS_PASS, TRASSANT, REMITENT, TRASSAT, AVELIST,
+990032\DICMETAF.FUNC_BODY.11=                     BIRTHPLACE, DEATHPLACE, PERCENT_, P_DATE, P_END, STOP_DATE,
+990032\DICMETAF.FUNC_BODY.12=                     IN_NOM_VAL
+990032\DICMETAF.FUNC_BODY.13=                     from OD_V_SHARES
+990032\DICMETAF.FUNC_BODY.14=                     where SHARE = :SHARE]
+990032\DICMETAF.FUNC_BODY.15=from %id
+990032\DICMETAF.FUNC_BODY.16=into IS_ACCEPT, IS_PASS, TRASSANT, REMITENT, TRASSAT, AVELIST, BIRTHPLACE, DEATHPLACE,
+990032\DICMETAF.FUNC_BODY.17=     PERCENT_, P_DATE, P_END, STOP_DATE, IN_NOM_VAL
+990032\DICMETAF.FUNC_BODY.18=do
+990032\DICMETAF.FUNC_BODY.19=    _F_ENVLIGHT->put_z(%lines, %ind, 'IS_ACCEPT', IS_ACCEPT);
+990032\DICMETAF.FUNC_BODY.20=    _F_ENVLIGHT->put_z(%lines, %ind, 'IS_PASS', IS_PASS);
+990032\DICMETAF.FUNC_BODY.21=    _F_ENVLIGHT->put_f(%lines, %ind, 'TRASSANT', %seen, TRASSANT);
+990032\DICMETAF.FUNC_BODY.22=    _F_ENVLIGHT->put_f(%lines, %ind, 'REMITENT', %seen, REMITENT);
+990032\DICMETAF.FUNC_BODY.23=    _F_ENVLIGHT->put_f(%lines, %ind, 'TRASSAT', %seen, TRASSAT);
+990032\DICMETAF.FUNC_BODY.24=    _F_ENVLIGHT->put_f(%lines, %ind, 'AVELIST', %seen, AVELIST);
+990032\DICMETAF.FUNC_BODY.25=    _F_ENVLIGHT->put_s(%lines, %ind, 'BIRTHPLACE', BIRTHPLACE);
+990032\DICMETAF.FUNC_BODY.26=    _F_ENVLIGHT->put_s(%lines, %ind, 'DEATHPLACE', DEATHPLACE);
+990032\DICMETAF.FUNC_BODY.27=    _F_ENVLIGHT->put_z(%lines, %ind, 'PERCENT_', PERCENT_);
+990032\DICMETAF.FUNC_BODY.28=    _F_ENVLIGHT->put_d(%lines, %ind, 'P_DATE', P_DATE);
+990032\DICMETAF.FUNC_BODY.29=    _F_ENVLIGHT->put_d(%lines, %ind, 'P_END', P_END);
+990032\DICMETAF.FUNC_BODY.30=    _F_ENVLIGHT->put_d(%lines, %ind, 'STOP_DATE', STOP_DATE);
+990032\DICMETAF.FUNC_BODY.31=    _F_ENVLIGHT->put_n(%lines, %ind, 'IN_NOM_VAL', IN_NOM_VAL);
+990032\DICMETAF.FUNC_BODY.32=end
+990032\DICMETAF.FUNC_BODY.COUNT=33
+990032\DICMETAF.FUNC_HEADER.0=out_share_v( %lines:LargeInt; %ind:Str; %seen:LargeInt; %id:Int )
+990032\DICMETAF.FUNC_HEADER.COUNT=1
+990032\DICMETAF.FUNC_ID=out_share_v
+990032\DICMETAF.IS_CANON=0
+990032\DICMETAF.IS_USER=1
+990032\DICMETAF.MD5_HASH=07538d666f03c0f42f4e542e2850ddfb
+990032\DICMETAF.MD5_STAMP=01.11.2026
+990033\DICMETAF.FORM_NUM=990000
+990033\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990033\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->out_share_values( %lines:LargeInt; %ind:Str; %share_id:Int )
+990033\DICMETAF.FUNC_BODY.02=   -----------------------------------------------------------------------------
+990033\DICMETAF.FUNC_BODY.03=   Поля инструмента из OD_VALUES, не зависящие от версии: SYSNAME, MFU, IS_IN.
+990033\DICMETAF.FUNC_BODY.04=   Выводятся один раз, в первом блоке.
+990033\DICMETAF.FUNC_BODY.06=   Параметры: %lines, %ind - как выше; %share_id - OD_VALUES.ID (SELF_ID).
+990033\DICMETAF.FUNC_BODY.07=   ----------------------------------------------------------------------------- */
+990033\DICMETAF.FUNC_BODY.08=var SYSNAME, MFU, IS_IN;
+990033\DICMETAF.FUNC_BODY.09=for 'Данные' select [select SYSNAME, MFU, IS_IN
+990033\DICMETAF.FUNC_BODY.10=                     from OD_VALUES
+990033\DICMETAF.FUNC_BODY.11=                     where ID = :ID]
+990033\DICMETAF.FUNC_BODY.12=from %share_id
+990033\DICMETAF.FUNC_BODY.13=into SYSNAME, MFU, IS_IN
+990033\DICMETAF.FUNC_BODY.14=do
+990033\DICMETAF.FUNC_BODY.15=    _F_ENVLIGHT->put_s(%lines, %ind, 'SYSNAME', SYSNAME);
+990033\DICMETAF.FUNC_BODY.16=    _F_ENVLIGHT->put_z(%lines, %ind, 'MFU', MFU);
+990033\DICMETAF.FUNC_BODY.17=    _F_ENVLIGHT->put_n(%lines, %ind, 'IS_IN', IS_IN);
+990033\DICMETAF.FUNC_BODY.18=end
+990033\DICMETAF.FUNC_BODY.COUNT=19
+990033\DICMETAF.FUNC_HEADER.0=out_share_values( %lines:LargeInt; %ind:Str; %share_id:Int )
+990033\DICMETAF.FUNC_HEADER.COUNT=1
+990033\DICMETAF.FUNC_ID=out_share_values
+990033\DICMETAF.IS_CANON=0
+990033\DICMETAF.IS_USER=1
+990033\DICMETAF.MD5_HASH=ac87d09728499fabe3464d56b09c3ada
+990033\DICMETAF.MD5_STAMP=01.11.2026
+990034\DICMETAF.FORM_NUM=990000
+990034\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990034\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->put_a( %lines:LargeInt; %ind:Str; %name:Str; %seen:LargeInt;
+990034\DICMETAF.FUNC_BODY.02=      %value )
+990034\DICMETAF.FUNC_BODY.03=   -----------------------------------------------------------------------------
+990034\DICMETAF.FUNC_BODY.04=   Добавить поле-ссылку на банковский счёт <<ИМЯ=&алиас>>; если счёт не
+990034\DICMETAF.FUNC_BODY.05=   выгружен выше, вместо поля пишется комментарий.
+990034\DICMETAF.FUNC_BODY.07=   Параметры:
+990034\DICMETAF.FUNC_BODY.08=     %lines, %ind, %name - как у put_s;
+990034\DICMETAF.FUNC_BODY.09=     %seen  - дескриптор списка выгруженных объектов (ключи A<ID счёта>);
+990034\DICMETAF.FUNC_BODY.10=     %value - ID счёта (OD_FACE_ACCS.ID).
+990034\DICMETAF.FUNC_BODY.11=   ----------------------------------------------------------------------------- */
+990034\DICMETAF.FUNC_BODY.12=var v_id;
+990034\DICMETAF.FUNC_BODY.13=if ~IsBlank(%value) then
+990034\DICMETAF.FUNC_BODY.14=    v_id := Trim(Str(%value));
+990034\DICMETAF.FUNC_BODY.15=    if _F_ENVLIGHT->has(%seen, 'A' + v_id) = 1 then
+990034\DICMETAF.FUNC_BODY.16=        ListAdd(%lines, %ind + %name + '=&a' + v_id);
+990034\DICMETAF.FUNC_BODY.17=    else
+990034\DICMETAF.FUNC_BODY.18=        ListAdd(%lines, %ind + '# ' + %name + ': счёт ID=' + v_id + ' не выгружен');
+990034\DICMETAF.FUNC_BODY.19=    end;
+990034\DICMETAF.FUNC_BODY.20=end
+990034\DICMETAF.FUNC_BODY.COUNT=21
+990034\DICMETAF.FUNC_HEADER.0=put_a( %lines:LargeInt; %ind:Str; %name:Str; %seen:LargeInt;
+990034\DICMETAF.FUNC_HEADER.1=   %value )
+990034\DICMETAF.FUNC_HEADER.COUNT=2
+990034\DICMETAF.FUNC_ID=put_a
+990034\DICMETAF.IS_CANON=0
+990034\DICMETAF.IS_USER=1
+990034\DICMETAF.MD5_HASH=a7c1d97493c60e0c10e2c7eabaa4702c
+990034\DICMETAF.MD5_STAMP=01.11.2026
+990035\DICMETAF.FORM_NUM=990000
+990035\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990035\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->put_d( %lines:LargeInt; %ind:Str; %name:Str; %value )
+990035\DICMETAF.FUNC_BODY.02=   -----------------------------------------------------------------------------
+990035\DICMETAF.FUNC_BODY.03=   Добавить поле-дату <<ИМЯ=ДД.ММ.ГГГГ>>. Пустая дата и служебные границы
+990035\DICMETAF.FUNC_BODY.04=   (01.01.1900 - начало времён, 01.01.9999 - бесконечность) пропускаются:
+990035\DICMETAF.FUNC_BODY.05=   это значения по умолчанию, в сценарии они не нужны.
+990035\DICMETAF.FUNC_BODY.07=   Параметры: как у put_s; %value - дата или дата-время.
+990035\DICMETAF.FUNC_BODY.08=   ----------------------------------------------------------------------------- */
+990035\DICMETAF.FUNC_BODY.09=if ~IsBlank(%value) then
+990035\DICMETAF.FUNC_BODY.10=    if (Year(%value) > 1900) and (Year(%value) < 9999) then
+990035\DICMETAF.FUNC_BODY.11=        ListAdd(%lines, %ind + %name + '=' + _F_ENVLIGHT->fmt_date(%value));
+990035\DICMETAF.FUNC_BODY.12=    end;
+990035\DICMETAF.FUNC_BODY.13=end
+990035\DICMETAF.FUNC_BODY.COUNT=14
+990035\DICMETAF.FUNC_HEADER.0=put_d( %lines:LargeInt; %ind:Str; %name:Str; %value )
+990035\DICMETAF.FUNC_HEADER.COUNT=1
+990035\DICMETAF.FUNC_ID=put_d
+990035\DICMETAF.IS_CANON=0
+990035\DICMETAF.IS_USER=1
+990035\DICMETAF.MD5_HASH=48e738ea1158bc8f573be6b7a5881bd1
+990035\DICMETAF.MD5_STAMP=01.11.2026
+990036\DICMETAF.FORM_NUM=990000
+990036\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990036\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->put_f( %lines:LargeInt; %ind:Str; %name:Str; %seen:LargeInt;
+990036\DICMETAF.FUNC_BODY.02=      %value )
+990036\DICMETAF.FUNC_BODY.03=   -----------------------------------------------------------------------------
+990036\DICMETAF.FUNC_BODY.04=   Добавить поле-ссылку на лицо <<ИМЯ=&алиас>>. Значение приводится к SELF_ID
+990036\DICMETAF.FUNC_BODY.05=   лица (хранимые ссылки бывают и на ID версии). Если лицо ещё не выгружено выше
+990036\DICMETAF.FUNC_BODY.06=   (цикл ссылок или ссылка на само лицо), вместо поля пишется комментарий.
+990036\DICMETAF.FUNC_BODY.08=   Параметры:
+990036\DICMETAF.FUNC_BODY.09=     %lines, %ind, %name - как у put_s;
+990036\DICMETAF.FUNC_BODY.10=     %seen  - дескриптор списка уже выгруженных объектов (ключи F<SELF_ID>);
+990036\DICMETAF.FUNC_BODY.11=     %value - ID лица (OD_FACES.ID или SELF_ID).
+990036\DICMETAF.FUNC_BODY.12=   ----------------------------------------------------------------------------- */
+990036\DICMETAF.FUNC_BODY.13=var v_self, v_id;
+990036\DICMETAF.FUNC_BODY.14=if ~IsBlank(%value) then
+990036\DICMETAF.FUNC_BODY.15=    v_self := _F_ENVLIGHT->ref_self(%value);
+990036\DICMETAF.FUNC_BODY.16=    if IsBlank(v_self) then
+990036\DICMETAF.FUNC_BODY.17=        ListAdd(%lines, %ind + '# ' + %name + ': лицо ID=' + Trim(Str(%value)) + ' не найдено в базе');
+990036\DICMETAF.FUNC_BODY.18=    else
+990036\DICMETAF.FUNC_BODY.19=        v_id := Trim(Str(v_self));
+990036\DICMETAF.FUNC_BODY.20=        if _F_ENVLIGHT->has(%seen, 'F' + v_id) = 1 then
+990036\DICMETAF.FUNC_BODY.21=            ListAdd(%lines, %ind + %name + '=&f' + v_id);
+990036\DICMETAF.FUNC_BODY.22=        else
+990036\DICMETAF.FUNC_BODY.23=            ListAdd(%lines, %ind + '# ' + %name + ': лицо SELF_ID=' + v_id + ' не выгружено выше (цикл ссылок)');
+990036\DICMETAF.FUNC_BODY.24=        end;
+990036\DICMETAF.FUNC_BODY.25=    end;
+990036\DICMETAF.FUNC_BODY.26=end
+990036\DICMETAF.FUNC_BODY.COUNT=27
+990036\DICMETAF.FUNC_HEADER.0=put_f( %lines:LargeInt; %ind:Str; %name:Str; %seen:LargeInt;
+990036\DICMETAF.FUNC_HEADER.1=   %value )
+990036\DICMETAF.FUNC_HEADER.COUNT=2
+990036\DICMETAF.FUNC_ID=put_f
+990036\DICMETAF.IS_CANON=0
+990036\DICMETAF.IS_USER=1
+990036\DICMETAF.MD5_HASH=82711553c23da73fb79dc482b4e644ac
+990036\DICMETAF.MD5_STAMP=01.11.2026
+990037\DICMETAF.FORM_NUM=990000
+990037\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990037\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->put_n( %lines:LargeInt; %ind:Str; %name:Str; %value )
+990037\DICMETAF.FUNC_BODY.02=   -----------------------------------------------------------------------------
+990037\DICMETAF.FUNC_BODY.03=   Добавить числовое поле <<ИМЯ=число>>; пустое значение (NULL) пропускается.
+990037\DICMETAF.FUNC_BODY.05=   Параметры: как у put_s; %value - число (целое или дробное).
+990037\DICMETAF.FUNC_BODY.06=   ----------------------------------------------------------------------------- */
+990037\DICMETAF.FUNC_BODY.07=if ~IsBlank(%value) then
+990037\DICMETAF.FUNC_BODY.08=    ListAdd(%lines, %ind + %name + '=' + Trim(Str(%value)));
+990037\DICMETAF.FUNC_BODY.09=end
+990037\DICMETAF.FUNC_BODY.COUNT=10
+990037\DICMETAF.FUNC_HEADER.0=put_n( %lines:LargeInt; %ind:Str; %name:Str; %value )
+990037\DICMETAF.FUNC_HEADER.COUNT=1
+990037\DICMETAF.FUNC_ID=put_n
+990037\DICMETAF.IS_CANON=0
+990037\DICMETAF.IS_USER=1
+990037\DICMETAF.MD5_HASH=10996597eceb7e712d32d8c2b9eafaa9
+990037\DICMETAF.MD5_STAMP=01.11.2026
+990038\DICMETAF.FORM_NUM=990000
+990038\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990038\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->put_s( %lines:LargeInt; %ind:Str; %name:Str; %value )
+990038\DICMETAF.FUNC_BODY.02=   -----------------------------------------------------------------------------
+990038\DICMETAF.FUNC_BODY.03=   Добавить строку <<ИМЯ=значение>> в выгрузку; пустое значение пропускается.
+990038\DICMETAF.FUNC_BODY.05=   Параметры:
+990038\DICMETAF.FUNC_BODY.06=     %lines - дескриптор списка строк выгрузки (L.self);
+990038\DICMETAF.FUNC_BODY.07=     %ind   - отступ строки;
+990038\DICMETAF.FUNC_BODY.08=     %name  - имя поля;
+990038\DICMETAF.FUNC_BODY.09=     %value - значение (строка).
+990038\DICMETAF.FUNC_BODY.10=   ----------------------------------------------------------------------------- */
+990038\DICMETAF.FUNC_BODY.11=var v_text;
+990038\DICMETAF.FUNC_BODY.12=v_text := _F_ENVLIGHT->flat(%value);
+990038\DICMETAF.FUNC_BODY.13=if v_text <> '' then
+990038\DICMETAF.FUNC_BODY.14=    ListAdd(%lines, %ind + %name + '=' + v_text);
+990038\DICMETAF.FUNC_BODY.15=end
+990038\DICMETAF.FUNC_BODY.COUNT=16
+990038\DICMETAF.FUNC_HEADER.0=put_s( %lines:LargeInt; %ind:Str; %name:Str; %value )
+990038\DICMETAF.FUNC_HEADER.COUNT=1
+990038\DICMETAF.FUNC_ID=put_s
+990038\DICMETAF.IS_CANON=0
+990038\DICMETAF.IS_USER=1
+990038\DICMETAF.MD5_HASH=dc9e3fcd71f0bfb9da171f1747d6d22e
+990038\DICMETAF.MD5_STAMP=01.11.2026
+990039\DICMETAF.FORM_NUM=990000
+990039\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990039\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->put_z( %lines:LargeInt; %ind:Str; %name:Str; %value )
+990039\DICMETAF.FUNC_BODY.02=   -----------------------------------------------------------------------------
+990039\DICMETAF.FUNC_BODY.03=   Добавить числовое поле, значение по умолчанию которого в базе - ноль:
+990039\DICMETAF.FUNC_BODY.04=   NULL и 0 пропускаются, чтобы не засорять выгрузку.
+990039\DICMETAF.FUNC_BODY.06=   Параметры: как у put_s; %value - число.
+990039\DICMETAF.FUNC_BODY.07=   ----------------------------------------------------------------------------- */
+990039\DICMETAF.FUNC_BODY.08=if ~IsBlank(%value) then
+990039\DICMETAF.FUNC_BODY.09=    if %value <> 0 then
+990039\DICMETAF.FUNC_BODY.10=        ListAdd(%lines, %ind + %name + '=' + Trim(Str(%value)));
+990039\DICMETAF.FUNC_BODY.11=    end;
+990039\DICMETAF.FUNC_BODY.12=end
+990039\DICMETAF.FUNC_BODY.COUNT=13
+990039\DICMETAF.FUNC_HEADER.0=put_z( %lines:LargeInt; %ind:Str; %name:Str; %value )
+990039\DICMETAF.FUNC_HEADER.COUNT=1
+990039\DICMETAF.FUNC_ID=put_z
+990039\DICMETAF.IS_CANON=0
+990039\DICMETAF.IS_USER=1
+990039\DICMETAF.MD5_HASH=ab922fc252727a4b067d1da2297dfb79
+990039\DICMETAF.MD5_STAMP=01.11.2026
+990040\DICMETAF.FORM_NUM=990000
+990040\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990040\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->ref_self( %id ):Int
+990040\DICMETAF.FUNC_BODY.02=   -----------------------------------------------------------------------------
+990040\DICMETAF.FUNC_BODY.03=   Привести ссылку на лицо к SELF_ID. Хранимые в таблицах ссылки на лица
+990040\DICMETAF.FUNC_BODY.04=   бывают на ID версии (OD_FACES.ID) или на SELF_ID; для первой версии они
+990040\DICMETAF.FUNC_BODY.05=   совпадают.
+990040\DICMETAF.FUNC_BODY.07=   Параметры: %id - ID лица.
+990040\DICMETAF.FUNC_BODY.08=   Возврат: SELF_ID либо NULL, если лица нет или %id пустой.
+990040\DICMETAF.FUNC_BODY.09=   ----------------------------------------------------------------------------- */
+990040\DICMETAF.FUNC_BODY.10=var v_res;
+990040\DICMETAF.FUNC_BODY.11=v_res := clear(0);
+990040\DICMETAF.FUNC_BODY.12=if ~IsBlank(%id) then
+990040\DICMETAF.FUNC_BODY.13=    v_res := Extract('Данные', [select max(SELF_ID) from OD_FACES where ID = :ID], %id);
+990040\DICMETAF.FUNC_BODY.14=end;
+990040\DICMETAF.FUNC_BODY.15=v_res
+990040\DICMETAF.FUNC_BODY.COUNT=16
+990040\DICMETAF.FUNC_HEADER.0=ref_self( %id ):Int
+990040\DICMETAF.FUNC_HEADER.COUNT=1
+990040\DICMETAF.FUNC_ID=ref_self
+990040\DICMETAF.IS_CANON=0
+990040\DICMETAF.IS_USER=1
+990040\DICMETAF.MD5_HASH=e9a62babab3f14340557a541f604b2f5
+990040\DICMETAF.MD5_STAMP=01.11.2026
+990041\DICMETAF.FORM_NUM=990000
+990041\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990041\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->share_self( %id ):Int
+990041\DICMETAF.FUNC_BODY.02=   -----------------------------------------------------------------------------
+990041\DICMETAF.FUNC_BODY.03=   Привести ID финансового инструмента к SELF_ID (OD_VALUES.ID): принимается
+990041\DICMETAF.FUNC_BODY.04=   и SELF_ID, и ID версии OD_SHARES.
+990041\DICMETAF.FUNC_BODY.06=   Параметры: %id - ID инструмента или его версии.
+990041\DICMETAF.FUNC_BODY.07=   Возврат: SELF_ID либо NULL, если инструмента нет.
+990041\DICMETAF.FUNC_BODY.08=   ----------------------------------------------------------------------------- */
+990041\DICMETAF.FUNC_BODY.09=var v_res;
+990041\DICMETAF.FUNC_BODY.10=v_res := clear(0);
+990041\DICMETAF.FUNC_BODY.11=if ~IsBlank(%id) then
+990041\DICMETAF.FUNC_BODY.12=    v_res := Extract('Данные', [select max(SELF_ID) from OD_SHARES where SELF_ID = :SELF_ID], %id);
+990041\DICMETAF.FUNC_BODY.13=    if IsBlank(v_res) then
+990041\DICMETAF.FUNC_BODY.14=        v_res := Extract('Данные', [select max(SELF_ID) from OD_SHARES where ID = :ID], %id);
+990041\DICMETAF.FUNC_BODY.15=    end;
+990041\DICMETAF.FUNC_BODY.16=end;
+990041\DICMETAF.FUNC_BODY.17=v_res
+990041\DICMETAF.FUNC_BODY.COUNT=18
+990041\DICMETAF.FUNC_HEADER.0=share_self( %id ):Int
+990041\DICMETAF.FUNC_HEADER.COUNT=1
+990041\DICMETAF.FUNC_ID=share_self
+990041\DICMETAF.IS_CANON=0
+990041\DICMETAF.IS_USER=1
+990041\DICMETAF.MD5_HASH=f1107438102668fa026d6f9586b96012
+990041\DICMETAF.MD5_STAMP=01.11.2026
+990042\DICMETAF.FORM_NUM=990000
+990042\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990042\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->xwalk_DIAL_MODE( %code:Int ):Str
+990042\DICMETAF.FUNC_BODY.02=   -----------------------------------------------------------------------------
+990042\DICMETAF.FUNC_BODY.03=   Вид деятельности.
+990042\DICMETAF.FUNC_BODY.04=   Обратное направление: код классификатора -> мнемоника env-light
+990042\DICMETAF.FUNC_BODY.05=   (DIAL_MODE, cte/mnemonics.py). Неизвестный код возвращается числом как есть.
+990042\DICMETAF.FUNC_BODY.07=   Параметры: %code - код (NUM в OD_SYS_TABS).
+990042\DICMETAF.FUNC_BODY.08=   Возврат: мнемоника либо число строкой.
+990042\DICMETAF.FUNC_BODY.09=   ----------------------------------------------------------------------------- */
+990042\DICMETAF.FUNC_BODY.10=var v_res, v_key, LiX;
+990042\DICMETAF.FUNC_BODY.11=v_key := Trim(Str(%code));
+990042\DICMETAF.FUNC_BODY.12=LiX := List('0=registrar', '1=broker', '2=dealer', '3=fund_manager', '4=trust',
+990042\DICMETAF.FUNC_BODY.13=            '5=depositary', '6=clearing', '7=exchange', '8=spec_depositary',
+990042\DICMETAF.FUNC_BODY.14=            '9=spec_registrar', '12=transfer_agent', '13=uk_agent', '14=bank',
+990042\DICMETAF.FUNC_BODY.15=            '18=insurance', '19=pif', '20=npf', '21=investment_fund', '34=advisor',
+990042\DICMETAF.FUNC_BODY.16=            '38=foreign_info_system');
+990042\DICMETAF.FUNC_BODY.17=v_res := ListVal(LiX, v_key);
+990042\DICMETAF.FUNC_BODY.18=if IsBlank(v_res) then
+990042\DICMETAF.FUNC_BODY.19=    v_res := v_key;
+990042\DICMETAF.FUNC_BODY.20=end;
+990042\DICMETAF.FUNC_BODY.21=v_res
+990042\DICMETAF.FUNC_BODY.COUNT=22
+990042\DICMETAF.FUNC_HEADER.0=xwalk_DIAL_MODE( %code:Int ):Str
+990042\DICMETAF.FUNC_HEADER.COUNT=1
+990042\DICMETAF.FUNC_ID=xwalk_DIAL_MODE
+990042\DICMETAF.IS_CANON=0
+990042\DICMETAF.IS_USER=1
+990042\DICMETAF.MD5_HASH=c138ce0af558472582ac0c31ed010d6b
+990042\DICMETAF.MD5_STAMP=01.11.2026
+990043\DICMETAF.FORM_NUM=990000
+990043\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990043\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->xwalk_REESTR_SUBTYPE( %code:Int ):Str
+990043\DICMETAF.FUNC_BODY.02=   -----------------------------------------------------------------------------
+990043\DICMETAF.FUNC_BODY.03=   Вид лицевого счёта.
+990043\DICMETAF.FUNC_BODY.04=   Обратное направление: код классификатора -> мнемоника env-light
+990043\DICMETAF.FUNC_BODY.05=   (REESTR_SUBTYPE, cte/mnemonics.py). Неизвестный код возвращается числом как есть.
+990043\DICMETAF.FUNC_BODY.07=   Параметры: %code - код (NUM в OD_SYS_TABS).
+990043\DICMETAF.FUNC_BODY.08=   Возврат: мнемоника либо число строкой.
+990043\DICMETAF.FUNC_BODY.09=   ----------------------------------------------------------------------------- */
+990043\DICMETAF.FUNC_BODY.10=var v_res, v_key, LiX;
+990043\DICMETAF.FUNC_BODY.11=v_key := Trim(Str(%code));
+990043\DICMETAF.FUNC_BODY.12=LiX := List('1=owner', '2=nominee', '3=trustee', '4=add_units', '5=pledge',
+990043\DICMETAF.FUNC_BODY.13=            '6=issued_units', '7=fund', '8=unidentified', '9=deposit',
+990043\DICMETAF.FUNC_BODY.14=            '10=issuer_treasury', '102=nominee_cdep');
+990043\DICMETAF.FUNC_BODY.15=v_res := ListVal(LiX, v_key);
+990043\DICMETAF.FUNC_BODY.16=if IsBlank(v_res) then
+990043\DICMETAF.FUNC_BODY.17=    v_res := v_key;
+990043\DICMETAF.FUNC_BODY.18=end;
+990043\DICMETAF.FUNC_BODY.19=v_res
+990043\DICMETAF.FUNC_BODY.COUNT=20
+990043\DICMETAF.FUNC_HEADER.0=xwalk_REESTR_SUBTYPE( %code:Int ):Str
+990043\DICMETAF.FUNC_HEADER.COUNT=1
+990043\DICMETAF.FUNC_ID=xwalk_REESTR_SUBTYPE
+990043\DICMETAF.IS_CANON=0
+990043\DICMETAF.IS_USER=1
+990043\DICMETAF.MD5_HASH=ec823460e3f45847407720c860a4e630
+990043\DICMETAF.MD5_STAMP=01.11.2026
+990044\DICMETAF.FORM_NUM=990000
+990044\DICMETAF.FUNC_BODY.00=/* -----------------------------------------------------------------------------
+990044\DICMETAF.FUNC_BODY.01=   _F_ENVLIGHT->xwalk_SHARE_CLASS( %code:Int ):Str
+990044\DICMETAF.FUNC_BODY.02=   -----------------------------------------------------------------------------
+990044\DICMETAF.FUNC_BODY.03=   Вид финансового инструмента.
+990044\DICMETAF.FUNC_BODY.04=   Обратное направление: код классификатора -> мнемоника env-light
+990044\DICMETAF.FUNC_BODY.05=   (SHARE_CLASS, cte/mnemonics.py). Неизвестный код возвращается числом как есть.
+990044\DICMETAF.FUNC_BODY.07=   Параметры: %code - код (NUM в OD_SYS_TABS).
+990044\DICMETAF.FUNC_BODY.08=   Возврат: мнемоника либо число строкой.
+990044\DICMETAF.FUNC_BODY.09=   ----------------------------------------------------------------------------- */
+990044\DICMETAF.FUNC_BODY.10=var v_res, v_key, LiX;
+990044\DICMETAF.FUNC_BODY.11=v_key := Trim(Str(%code));
+990044\DICMETAF.FUNC_BODY.12=LiX := List('1=stock', '2=bond', '3=bill', '4=option', '5=future', '6=bank_cert',
+990044\DICMETAF.FUNC_BODY.13=            '7=dr', '8=bill_of_lading', '9=warrant', '10=unit', '11=ooo_capital',
+990044\DICMETAF.FUNC_BODY.14=            '12=mortgage_cert', '13=mortgage_part', '14=clearing_cert',
+990044\DICMETAF.FUNC_BODY.15=            '15=digital_asset', '16=digital_cert', '17=crypto');
+990044\DICMETAF.FUNC_BODY.16=v_res := ListVal(LiX, v_key);
+990044\DICMETAF.FUNC_BODY.17=if IsBlank(v_res) then
+990044\DICMETAF.FUNC_BODY.18=    v_res := v_key;
+990044\DICMETAF.FUNC_BODY.19=end;
+990044\DICMETAF.FUNC_BODY.20=v_res
+990044\DICMETAF.FUNC_BODY.COUNT=21
+990044\DICMETAF.FUNC_HEADER.0=xwalk_SHARE_CLASS( %code:Int ):Str
+990044\DICMETAF.FUNC_HEADER.COUNT=1
+990044\DICMETAF.FUNC_ID=xwalk_SHARE_CLASS
+990044\DICMETAF.IS_CANON=0
+990044\DICMETAF.IS_USER=1
+990044\DICMETAF.MD5_HASH=cab8439e7b45c2fb1372a16bb5c6a95b
+990044\DICMETAF.MD5_STAMP=01.11.2026
+Версия БД=V04.60
+Выгружал=ENV_LIGHT из версии V04.60
+Формы=990000;

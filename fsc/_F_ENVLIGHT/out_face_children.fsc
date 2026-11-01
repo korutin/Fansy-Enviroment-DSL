@@ -1,0 +1,107 @@
+/* -----------------------------------------------------------------------------
+   _F_ENVLIGHT->out_face_children( %lines:LargeInt; %seen:LargeInt; %self_id:Int )
+   -----------------------------------------------------------------------------
+   Вложенные блоки лица: code (коды у кодировщиков), activity (виды
+   деятельности, лицензии), attorney (уполномоченные лица).
+   Кодировщик и уполномоченный записываются ссылкой <<&алиас>>, поэтому
+   соответствующие лица должны быть выгружены раньше (иначе вместо блока -
+   комментарий). Уполномоченный без записи в справочнике лиц - блок attorney
+   без ключа, с полем NAME.
+
+   Параметры:
+     %lines   - список строк выгрузки;
+     %seen    - список выгруженных объектов;
+     %self_id - SELF_ID лица-родителя.
+   ----------------------------------------------------------------------------- */
+var CODER, CODE;
+var DIAL_MODE, NUM_LIC, BEG_LIC, END_LIC, PLACE_LIC;
+var WORKER, NAME, BASIS, DUTY, B_DATE, E_DATE, A_TYPE, DOC_TYPE, DOC_SER, DOC_NUM,
+    DOC_DAT, DOC_PLACE, RELATION, A_POWER, DOC_END, DOC_CODE;
+var v_ind, v_ind2, v_self, v_id, v_ok;
+v_ind := '  ';
+v_ind2 := '    ';
+/* коды у кодировщиков */
+for 'Данные' select [select CODER, CODE
+                     from OD_FACE_CODERS
+                     where FACE = :FACE
+                     order by CODER]
+from %self_id
+into CODER, CODE
+do
+    v_ok := 0;
+    v_self := _F_ENVLIGHT->ref_self(CODER);
+    if ~IsBlank(v_self) then
+        v_id := Trim(Str(v_self));
+        if _F_ENVLIGHT->has(%seen, 'F' + v_id) = 1 then
+            v_ok := 1;
+        end;
+    end;
+    if v_ok = 1 then
+        ListAdd(%lines, v_ind + 'code: &f' + v_id);
+        _F_ENVLIGHT->put_s(%lines, v_ind2, 'CODE', CODE);
+    else
+        ListAdd(%lines, v_ind + '# code: кодировщик CODER=' + Trim(Str(CODER)) + ' не выгружен');
+    end;
+end;
+/* виды деятельности */
+for 'Данные' select [select DIAL_MODE, NUM_LIC, BEG_LIC, END_LIC, PLACE_LIC
+                     from OD_P_FACES
+                     where FACE = :FACE
+                     order by DIAL_MODE, BEG_LIC]
+from %self_id
+into DIAL_MODE, NUM_LIC, BEG_LIC, END_LIC, PLACE_LIC
+do
+    ListAdd(%lines, v_ind + 'activity: ' + _F_ENVLIGHT->xwalk_DIAL_MODE(DIAL_MODE));
+    _F_ENVLIGHT->put_s(%lines, v_ind2, 'NUM_LIC', NUM_LIC);
+    _F_ENVLIGHT->put_s(%lines, v_ind2, 'PLACE_LIC', PLACE_LIC);
+    _F_ENVLIGHT->put_d(%lines, v_ind2, 'BEG_LIC', BEG_LIC);
+    _F_ENVLIGHT->put_d(%lines, v_ind2, 'END_LIC', END_LIC);
+end;
+/* уполномоченные лица */
+for 'Данные' select [select WORKER, NAME, BASIS, DUTY, B_DATE, E_DATE, A_TYPE, DOC_TYPE,
+                            DOC_SER, DOC_NUM, DOC_DAT, DOC_PLACE, RELATION, POWER, DOC_END,
+                            DOC_CODE
+                     from OD_A_FACES
+                     where FACE = :FACE and IS_A = 1
+                     order by ID]
+from %self_id
+into WORKER, NAME, BASIS, DUTY, B_DATE, E_DATE, A_TYPE, DOC_TYPE,
+     DOC_SER, DOC_NUM, DOC_DAT, DOC_PLACE, RELATION, A_POWER, DOC_END,
+     DOC_CODE
+do
+    v_ok := 1;
+    if IsBlank(WORKER) then
+        ListAdd(%lines, v_ind + 'attorney');
+    else
+        v_ok := 0;
+        v_self := _F_ENVLIGHT->ref_self(WORKER);
+        if ~IsBlank(v_self) then
+            v_id := Trim(Str(v_self));
+            if _F_ENVLIGHT->has(%seen, 'F' + v_id) = 1 then
+                v_ok := 1;
+            end;
+        end;
+        if v_ok = 1 then
+            ListAdd(%lines, v_ind + 'attorney: &f' + v_id);
+        else
+            ListAdd(%lines, v_ind + '# attorney: уполномоченный WORKER=' + Trim(Str(WORKER)) + ' не выгружен');
+        end;
+    end;
+    if v_ok = 1 then
+        _F_ENVLIGHT->put_s(%lines, v_ind2, 'NAME', NAME);
+        _F_ENVLIGHT->put_s(%lines, v_ind2, 'DUTY', DUTY);
+        _F_ENVLIGHT->put_s(%lines, v_ind2, 'BASIS', BASIS);
+        _F_ENVLIGHT->put_d(%lines, v_ind2, 'B_DATE', B_DATE);
+        _F_ENVLIGHT->put_d(%lines, v_ind2, 'E_DATE', E_DATE);
+        _F_ENVLIGHT->put_z(%lines, v_ind2, 'A_TYPE', A_TYPE);
+        _F_ENVLIGHT->put_z(%lines, v_ind2, 'DOC_TYPE', DOC_TYPE);
+        _F_ENVLIGHT->put_s(%lines, v_ind2, 'DOC_SER', DOC_SER);
+        _F_ENVLIGHT->put_s(%lines, v_ind2, 'DOC_NUM', DOC_NUM);
+        _F_ENVLIGHT->put_d(%lines, v_ind2, 'DOC_DAT', DOC_DAT);
+        _F_ENVLIGHT->put_s(%lines, v_ind2, 'DOC_PLACE', DOC_PLACE);
+        _F_ENVLIGHT->put_s(%lines, v_ind2, 'DOC_CODE', DOC_CODE);
+        _F_ENVLIGHT->put_d(%lines, v_ind2, 'DOC_END', DOC_END);
+        _F_ENVLIGHT->put_n(%lines, v_ind2, 'RELATION', RELATION);
+        _F_ENVLIGHT->put_n(%lines, v_ind2, 'POWER', A_POWER);
+    end;
+end

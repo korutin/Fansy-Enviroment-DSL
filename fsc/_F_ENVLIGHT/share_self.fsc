@@ -1,0 +1,18 @@
+/* -----------------------------------------------------------------------------
+   _F_ENVLIGHT->share_self( %id ):Int
+   -----------------------------------------------------------------------------
+   Привести ID финансового инструмента к SELF_ID (OD_VALUES.ID): принимается
+   и SELF_ID, и ID версии OD_SHARES.
+
+   Параметры: %id - ID инструмента или его версии.
+   Возврат: SELF_ID либо NULL, если инструмента нет.
+   ----------------------------------------------------------------------------- */
+var v_res;
+v_res := clear(0);
+if ~IsBlank(%id) then
+    v_res := Extract('Данные', [select max(SELF_ID) from OD_SHARES where SELF_ID = :SELF_ID], %id);
+    if IsBlank(v_res) then
+        v_res := Extract('Данные', [select max(SELF_ID) from OD_SHARES where ID = :ID], %id);
+    end;
+end;
+v_res

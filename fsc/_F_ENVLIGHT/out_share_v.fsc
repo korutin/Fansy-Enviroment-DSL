@@ -1,0 +1,33 @@
+/* -----------------------------------------------------------------------------
+   _F_ENVLIGHT->out_share_v( %lines:LargeInt; %ind:Str; %seen:LargeInt; %id:Int )
+   -----------------------------------------------------------------------------
+   Поля векселя из OD_V_SHARES. TRASSANT, REMITENT, TRASSAT, AVELIST - ссылки
+   на лица (<<&алиас>>).
+
+   Параметры: %lines, %ind, %seen - как выше; %id - OD_SHARES.ID версии.
+   ----------------------------------------------------------------------------- */
+var IS_ACCEPT, IS_PASS, TRASSANT, REMITENT, TRASSAT, AVELIST, BIRTHPLACE, DEATHPLACE,
+    PERCENT_, P_DATE, P_END, STOP_DATE, IN_NOM_VAL;
+for 'Данные' select [select IS_ACCEPT, IS_PASS, TRASSANT, REMITENT, TRASSAT, AVELIST,
+                     BIRTHPLACE, DEATHPLACE, PERCENT_, P_DATE, P_END, STOP_DATE,
+                     IN_NOM_VAL
+                     from OD_V_SHARES
+                     where SHARE = :SHARE]
+from %id
+into IS_ACCEPT, IS_PASS, TRASSANT, REMITENT, TRASSAT, AVELIST, BIRTHPLACE, DEATHPLACE,
+     PERCENT_, P_DATE, P_END, STOP_DATE, IN_NOM_VAL
+do
+    _F_ENVLIGHT->put_z(%lines, %ind, 'IS_ACCEPT', IS_ACCEPT);
+    _F_ENVLIGHT->put_z(%lines, %ind, 'IS_PASS', IS_PASS);
+    _F_ENVLIGHT->put_f(%lines, %ind, 'TRASSANT', %seen, TRASSANT);
+    _F_ENVLIGHT->put_f(%lines, %ind, 'REMITENT', %seen, REMITENT);
+    _F_ENVLIGHT->put_f(%lines, %ind, 'TRASSAT', %seen, TRASSAT);
+    _F_ENVLIGHT->put_f(%lines, %ind, 'AVELIST', %seen, AVELIST);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'BIRTHPLACE', BIRTHPLACE);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'DEATHPLACE', DEATHPLACE);
+    _F_ENVLIGHT->put_z(%lines, %ind, 'PERCENT_', PERCENT_);
+    _F_ENVLIGHT->put_d(%lines, %ind, 'P_DATE', P_DATE);
+    _F_ENVLIGHT->put_d(%lines, %ind, 'P_END', P_END);
+    _F_ENVLIGHT->put_d(%lines, %ind, 'STOP_DATE', STOP_DATE);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'IN_NOM_VAL', IN_NOM_VAL);
+end

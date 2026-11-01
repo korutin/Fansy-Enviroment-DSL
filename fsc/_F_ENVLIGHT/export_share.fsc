@@ -1,0 +1,74 @@
+/* -----------------------------------------------------------------------------
+   _F_ENVLIGHT->export_share( %share:Int ):Str
+   -----------------------------------------------------------------------------
+   Сериализовать финансовый инструмент в формат env-light.
+
+   Выгружается блок share (все версии, с таблицей вида инструмента) и все
+   лица, на которые он ссылается по любой версии: эмитент ISSUER, орган
+   регистрации ORG_REG и ссылки таблиц вида (GUARANTOR, IMMO_COVER для
+   облигаций, TRASSANT, REMITENT, TRASSAT, AVELIST для векселей, BANK для
+   производных) - вместе с лицами, на которые ссылаются они. Порядок:
+   лица, затем инструмент.
+
+   Ошибки обращения к БД не перехватываются.
+
+   Параметры: %share - SELF_ID инструмента (OD_VALUES.ID) или ID версии.
+   Возврат: текст сценария env-light (строки через CR LF).
+   ----------------------------------------------------------------------------- */
+var ISSUER, ORG_REG, GUARANTOR, IMMO_COVER, TRASSANT, REMITENT, TRASSAT, AVELIST, BANK;
+var v_lines, v_seen, v_queue, v_efrom, v_eto, v_self;
+v_lines := List();
+v_seen := List();
+v_queue := List();
+v_efrom := List();
+v_eto := List();
+v_self := _F_ENVLIGHT->share_self(%share);
+if IsBlank(v_self) then
+    ListAdd(v_lines, '# env-light: финансовый инструмент ID=' + Trim(Str(%share)) + ' не найден');
+else
+    ListAdd(v_lines, '# env-light: выгрузка финансового инструмента SELF_ID=' + Trim(Str(v_self)));
+    for 'Данные' select [select ISSUER, ORG_REG
+                         from OD_SHARES
+                         where SELF_ID = :SELF_ID]
+    from v_self
+    into ISSUER, ORG_REG
+    do
+        _F_ENVLIGHT->add_face_seed(v_queue.self, ISSUER);
+        _F_ENVLIGHT->add_face_seed(v_queue.self, ORG_REG);
+    end;
+    for 'Данные' select [select O.GUARANTOR, O.IMMO_COVER
+                         from OD_O_SHARES O
+                              join OD_SHARES S on S.ID = O.SHARE
+                         where S.SELF_ID = :SELF_ID]
+    from v_self
+    into GUARANTOR, IMMO_COVER
+    do
+        _F_ENVLIGHT->add_face_seed(v_queue.self, GUARANTOR);
+        _F_ENVLIGHT->add_face_seed(v_queue.self, IMMO_COVER);
+    end;
+    for 'Данные' select [select V.TRASSANT, V.REMITENT, V.TRASSAT, V.AVELIST
+                         from OD_V_SHARES V
+                              join OD_SHARES S on S.ID = V.SHARE
+                         where S.SELF_ID = :SELF_ID]
+    from v_self
+    into TRASSANT, REMITENT, TRASSAT, AVELIST
+    do
+        _F_ENVLIGHT->add_face_seed(v_queue.self, TRASSANT);
+        _F_ENVLIGHT->add_face_seed(v_queue.self, REMITENT);
+        _F_ENVLIGHT->add_face_seed(v_queue.self, TRASSAT);
+        _F_ENVLIGHT->add_face_seed(v_queue.self, AVELIST);
+    end;
+    for 'Данные' select [select T.BANK
+                         from OD_T_SHARES T
+                              join OD_SHARES S on S.ID = T.SHARE
+                         where S.SELF_ID = :SELF_ID]
+    from v_self
+    into BANK
+    do
+        _F_ENVLIGHT->add_face_seed(v_queue.self, BANK);
+    end;
+    _F_ENVLIGHT->face_closure(v_queue.self, v_efrom.self, v_eto.self);
+    _F_ENVLIGHT->faces_emit(v_lines.self, v_seen.self, v_queue.self, v_efrom.self, v_eto.self);
+    _F_ENVLIGHT->out_share(v_lines.self, v_seen.self, v_self);
+end;
+_F_ENVLIGHT->join_lines(v_lines)

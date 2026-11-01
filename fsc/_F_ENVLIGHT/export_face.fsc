@@ -1,0 +1,33 @@
+/* -----------------------------------------------------------------------------
+   _F_ENVLIGHT->export_face( %face:Int ):Str
+   -----------------------------------------------------------------------------
+   Сериализовать лицо в формат env-light.
+
+   Выгружается выбранное лицо и все лица, на которые оно (по всем версиям)
+   ссылается, включая ссылки этих лиц, и так далее: EXEC_ORGAN, NAL_ORGAN,
+   DEPOT, REESTR, кодировщики кодов, уполномоченные. Лица, ссылающиеся на
+   выбранное, не выгружаются. Лица идут в порядке зависимостей (сначала те,
+   на кого ссылаются). Лицо-банк выгружается блоком bank.
+
+   Ошибки обращения к БД не перехватываются: частичная выгрузка хуже, чем
+   явный сбой.
+
+   Параметры: %face - SELF_ID или ID версии лица.
+   Возврат: текст сценария env-light (строки через CR LF).
+   ----------------------------------------------------------------------------- */
+var v_lines, v_seen, v_queue, v_efrom, v_eto, v_self;
+v_lines := List();
+v_seen := List();
+v_queue := List();
+v_efrom := List();
+v_eto := List();
+v_self := _F_ENVLIGHT->ref_self(%face);
+if IsBlank(v_self) then
+    ListAdd(v_lines, '# env-light: лицо ID=' + Trim(Str(%face)) + ' не найдено');
+else
+    ListAdd(v_lines, '# env-light: выгрузка лица SELF_ID=' + Trim(Str(v_self)));
+    _F_ENVLIGHT->add_uniq(v_queue.self, v_self);
+    _F_ENVLIGHT->face_closure(v_queue.self, v_efrom.self, v_eto.self);
+    _F_ENVLIGHT->faces_emit(v_lines.self, v_seen.self, v_queue.self, v_efrom.self, v_eto.self);
+end;
+_F_ENVLIGHT->join_lines(v_lines)

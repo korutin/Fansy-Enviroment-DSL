@@ -1,0 +1,35 @@
+/* -----------------------------------------------------------------------------
+   _F_ENVLIGHT->out_client( %lines:LargeInt; %seen:LargeInt; %client_id:Int )
+   -----------------------------------------------------------------------------
+   Выгрузить лицевой счёт блоком "client &c<ID>: <вид счёта>": основные поля
+   (out_client_main), текущие реквизиты (out_client_rec) и вложенные блоки
+   affiliate (out_affiliates). Лица и банковские счета, на которые ссылается
+   счёт, должны быть выгружены раньше (export_client это обеспечивает).
+   Родительский счёт PARENT не выгружается: вместо поля пишется комментарий.
+   В конце счёт отмечается в %seen ключом C<ID>.
+
+   Параметры:
+     %lines     - список строк выгрузки;
+     %seen      - список выгруженных объектов, дополняется;
+     %client_id - OD_CLIENTS.ID.
+   ----------------------------------------------------------------------------- */
+var NUMBER, SUBTYPE, NAME, PARENT;
+var v_ind;
+v_ind := '  ';
+for 'Данные' select [select NUMBER, SUBTYPE, NAME, PARENT
+                     from OD_CLIENTS
+                     where ID = :ID]
+from %client_id
+into NUMBER, SUBTYPE, NAME, PARENT
+do
+    ListAdd(%lines, '');
+    ListAdd(%lines, '# лицевой счёт ' + _F_ENVLIGHT->flat(NUMBER) + ' ' + _F_ENVLIGHT->flat(NAME));
+    ListAdd(%lines, 'client &c' + Trim(Str(%client_id)) + ': ' + _F_ENVLIGHT->xwalk_REESTR_SUBTYPE(SUBTYPE));
+    _F_ENVLIGHT->out_client_main(%lines, v_ind, %seen, %client_id);
+    if ~IsBlank(PARENT) then
+        ListAdd(%lines, v_ind + '# PARENT: родительский счёт ID=' + Trim(Str(PARENT)) + ' не выгружен');
+    end;
+    _F_ENVLIGHT->out_client_rec(%lines, v_ind, %seen, %client_id);
+    _F_ENVLIGHT->out_affiliates(%lines, v_ind, %seen, %client_id);
+end;
+ListAdd(%seen, 'C' + Trim(Str(%client_id)))

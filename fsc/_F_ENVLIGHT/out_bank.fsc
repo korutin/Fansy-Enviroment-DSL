@@ -1,0 +1,39 @@
+/* -----------------------------------------------------------------------------
+   _F_ENVLIGHT->out_bank( %lines:LargeInt; %seen:LargeInt; %self_id:Int )
+   -----------------------------------------------------------------------------
+   Выгрузить банк блоком "bank &f<SELF_ID>": лицо-юрлицо (текущая версия,
+   поля как у face) плюс запись OD_BANKS (BIC, KORR, CITY, SWIFT, REG_NUM,
+   IS_INSURANCE). Выгружается только текущая версия лица, историю с as_of
+   выгрузка не пишет. Вложенных блоков у bank нет. Алиас тот же f<SELF_ID>,
+   что и у обычного лица, поэтому ссылки на банк из других блоков одинаковы.
+   BIC необязателен: банк без BIC (например, иностранный, только со SWIFT)
+   выгружается как есть.
+
+   Параметры:
+     %lines   - список строк выгрузки;
+     %seen    - список выгруженных объектов, дополняется;
+     %self_id - SELF_ID лица-банка.
+   ----------------------------------------------------------------------------- */
+var ID, NAME, BIC, SWIFT, KORR, CITY, REG_NUM, IS_INSURANCE;
+var v_ind;
+v_ind := '  ';
+for 'Данные' select [select F.ID, F.NAME, B.BIC, B.SWIFT, B.KORR, B.CITY, B.REG_NUM, B.IS_INSURANCE
+                     from OD_FACES F
+                          left join OD_BANKS B on B.U_FACE = F.SELF_ID
+                     where F.SELF_ID = :SELF_ID and F.LAST_FLAG = 1]
+from %self_id
+into ID, NAME, BIC, SWIFT, KORR, CITY, REG_NUM, IS_INSURANCE
+do
+    ListAdd(%lines, '');
+    ListAdd(%lines, '# ' + _F_ENVLIGHT->flat(NAME));
+    ListAdd(%lines, 'bank &f' + Trim(Str(%self_id)));
+    _F_ENVLIGHT->put_s(%lines, v_ind, 'BIC', BIC);
+    _F_ENVLIGHT->out_face_common(%lines, v_ind, ID);
+    _F_ENVLIGHT->out_face_juridical(%lines, v_ind, %seen, ID);
+    _F_ENVLIGHT->put_s(%lines, v_ind, 'KORR', KORR);
+    _F_ENVLIGHT->put_s(%lines, v_ind, 'CITY', CITY);
+    _F_ENVLIGHT->put_s(%lines, v_ind, 'SWIFT', SWIFT);
+    _F_ENVLIGHT->put_s(%lines, v_ind, 'REG_NUM', REG_NUM);
+    _F_ENVLIGHT->put_z(%lines, v_ind, 'IS_INSURANCE', IS_INSURANCE);
+end;
+ListAdd(%seen, 'F' + Trim(Str(%self_id)))

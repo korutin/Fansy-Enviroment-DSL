@@ -1,0 +1,79 @@
+/* -----------------------------------------------------------------------------
+   _F_ENVLIGHT->export_client( %client:Int ):Str
+   -----------------------------------------------------------------------------
+   Сериализовать лицевой счёт (client) в формат env-light.
+
+   Выгружается: лица, на которые ссылается счёт (владелец FACE, эмитент
+   ISSUER, INCOME_FACE, лица аффилированных, владельцы и площадки банковских
+   счетов) вместе с лицами, на которые ссылаются они; банковские счета,
+   привязанные к лицевому счёту (INCOME_ACC текущей записи реквизитов и
+   аффилированных); лица-банки этих счетов блоками bank; сам счёт блоком client
+   с вложенными affiliate. Порядок: лица и банки, банковские счета, счёт.
+
+   Ошибки обращения к БД не перехватываются.
+
+   Параметры: %client - OD_CLIENTS.ID лицевого счёта.
+   Возврат: текст сценария env-light (строки через CR LF).
+   ----------------------------------------------------------------------------- */
+var FACE, ISSUER, INCOME_FACE, INCOME_ACC, AFF_FACE, AFF_ACC, ACC_FACE, ACC_MARKET, ACC_BANK;
+var v_lines, v_seen, v_queue, v_efrom, v_eto, v_accs, v_exists, v_i;
+v_lines := List();
+v_seen := List();
+v_queue := List();
+v_efrom := List();
+v_eto := List();
+v_accs := List();
+v_exists := Extract('Данные', [select count(*) from OD_CLIENTS where ID = :ID], %client);
+if v_exists = 0 then
+    ListAdd(v_lines, '# env-light: лицевой счёт ID=' + Trim(Str(%client)) + ' не найден');
+else
+    ListAdd(v_lines, '# env-light: выгрузка лицевого счёта ID=' + Trim(Str(%client)));
+    /* лица и банковские счета, на которые ссылается счёт */
+    for 'Данные' select [select C.FACE, C.ISSUER, R.INCOME_FACE, R.INCOME_ACC
+                         from OD_CLIENTS C
+                              left join OD_CLIENTS_REC R on R.CLIENT = C.ID
+                                   and R.B_DATE = (select max(R2.B_DATE) from OD_CLIENTS_REC R2
+                                                   where R2.CLIENT = C.ID)
+                         where C.ID = :ID]
+    from %client
+    into FACE, ISSUER, INCOME_FACE, INCOME_ACC
+    do
+        _F_ENVLIGHT->add_face_seed(v_queue.self, FACE);
+        _F_ENVLIGHT->add_face_seed(v_queue.self, ISSUER);
+        _F_ENVLIGHT->add_face_seed(v_queue.self, INCOME_FACE);
+        _F_ENVLIGHT->add_uniq(v_accs.self, INCOME_ACC);
+    end;
+    for 'Данные' select [select FACE, INCOME_ACC
+                         from OD_AFFILS
+                         where CLIENT = :CLIENT
+                         order by ID]
+    from %client
+    into AFF_FACE, AFF_ACC
+    do
+        _F_ENVLIGHT->add_face_seed(v_queue.self, AFF_FACE);
+        _F_ENVLIGHT->add_uniq(v_accs.self, AFF_ACC);
+    end;
+    v_i := 0;
+    while v_i < ListCount(v_accs) do
+        for 'Данные' select [select FACE, MARKET, BANK
+                             from OD_FACE_ACCS
+                             where ID = :ID]
+        from Int(ListGet(v_accs, v_i))
+        into ACC_FACE, ACC_MARKET, ACC_BANK
+        do
+            _F_ENVLIGHT->add_face_seed(v_queue.self, ACC_FACE);
+            _F_ENVLIGHT->add_face_seed(v_queue.self, ACC_MARKET);
+            _F_ENVLIGHT->add_face_seed(v_queue.self, ACC_BANK);
+        end;
+        v_i := v_i + 1;
+    end;
+    _F_ENVLIGHT->face_closure(v_queue.self, v_efrom.self, v_eto.self);
+    _F_ENVLIGHT->faces_emit(v_lines.self, v_seen.self, v_queue.self, v_efrom.self, v_eto.self);
+    v_i := 0;
+    while v_i < ListCount(v_accs) do
+        _F_ENVLIGHT->out_account(v_lines.self, v_seen.self, Int(ListGet(v_accs, v_i)));
+        v_i := v_i + 1;
+    end;
+    _F_ENVLIGHT->out_client(v_lines.self, v_seen.self, %client);
+end;
+_F_ENVLIGHT->join_lines(v_lines)

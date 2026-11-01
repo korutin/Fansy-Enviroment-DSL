@@ -1,0 +1,40 @@
+/* -----------------------------------------------------------------------------
+   _F_ENVLIGHT->out_share_opts( %lines:LargeInt; %ind:Str; %share_id:Int;
+      %b_date:Date )
+   -----------------------------------------------------------------------------
+   Исторические поля инструмента NAME, ISIN, CFI на дату начала версии:
+   значение берётся из исторических опций (OD_OPTIONS), а при их отсутствии -
+   из OD_VALUES (то же правило, что в API_UPD_SHARE).
+
+   Параметры:
+     %lines, %ind - как выше; %share_id - OD_VALUES.ID (SELF_ID);
+     %b_date - дата начала версии (OD_SHARES.B_DATE).
+   ----------------------------------------------------------------------------- */
+var v_name, v_isin, v_cfi;
+v_name := Extract('Данные', [select coalesce(O.VAL, V.NAME)
+                       from OD_VALUES V
+                            left join OD_DOC_CATS C on C.SYS_NAME = 'OD_SHARES'
+                            left join OP_FIELDS F on F.OP = C.ID and F.AS_NAME = 'S_NAME'
+                            left join OD_OPTIONS O on O.OBJECT = V.ID and O.DESCR = F.ID
+                                                  and O.B_DATE <= :B_DATE and O.E_DATE > :E_DATE
+                       where V.ID = :ID],
+                  %b_date, %b_date, %share_id);
+v_isin := Extract('Данные', [select coalesce(O.VAL, V.ISIN)
+                       from OD_VALUES V
+                            left join OD_DOC_CATS C on C.SYS_NAME = 'OD_SHARES'
+                            left join OP_FIELDS F on F.OP = C.ID and F.AS_NAME = 'ISIN'
+                            left join OD_OPTIONS O on O.OBJECT = V.ID and O.DESCR = F.ID
+                                                  and O.B_DATE <= :B_DATE and O.E_DATE > :E_DATE
+                       where V.ID = :ID],
+                  %b_date, %b_date, %share_id);
+v_cfi := Extract('Данные', [select coalesce(O.VAL, V.CFI)
+                       from OD_VALUES V
+                            left join OD_DOC_CATS C on C.SYS_NAME = 'OD_SHARES'
+                            left join OP_FIELDS F on F.OP = C.ID and F.AS_NAME = 'CFI'
+                            left join OD_OPTIONS O on O.OBJECT = V.ID and O.DESCR = F.ID
+                                                  and O.B_DATE <= :B_DATE and O.E_DATE > :E_DATE
+                       where V.ID = :ID],
+                 %b_date, %b_date, %share_id);
+_F_ENVLIGHT->put_s(%lines, %ind, 'NAME', v_name);
+_F_ENVLIGHT->put_s(%lines, %ind, 'ISIN', v_isin);
+_F_ENVLIGHT->put_s(%lines, %ind, 'CFI', v_cfi)

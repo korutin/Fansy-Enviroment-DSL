@@ -1,0 +1,60 @@
+/* -----------------------------------------------------------------------------
+   _F_ENVLIGHT->out_face_common( %lines:LargeInt; %ind:Str; %id:Int )
+   -----------------------------------------------------------------------------
+   Поля версии лица из OD_FACES (общие для физлица и юрлица), в именах
+   полей API_UPD_FACE. Не выводятся: ссылки на пользовательские справочники
+   (BRANCHES), пути к файлам (IMAGEFILE), служебные поля.
+
+   Параметры:
+     %lines - список строк выгрузки; %ind - отступ полей;
+     %id    - OD_FACES.ID версии лица.
+   ----------------------------------------------------------------------------- */
+var NAME, INN, TIN, KPP, MNEM, STATE, HOME_ADR, MAIL_ADR, FACT_ADR, HOME_KLADR,
+    MAIL_KLADR, FACT_KLADR, EMAIL, PHONE, FAX, TELEX, REGN, IS_NERES, PROFILE, TAXIS,
+    ENG_NAME, ENG_MAIL_ADR, DATE_DEPTH, DATE_BIRTH, DOC_TYPE, DOC_SER, DOC_NUM,
+    DOC_DAT, DOC_END, DOC_PLACE, DOC_CODE;
+for 'Данные' select [select NAME, INN, TIN, KPP, MNEM, STATE, HOME_ADR, MAIL_ADR, FACT_ADR,
+                     HOME_KLADR, MAIL_KLADR, FACT_KLADR, EMAIL, PHONE, FAX, TELEX,
+                     REGN, IS_NERES, PROFILE, TAXIS, ENG_NAME, ENG_MAIL_ADR,
+                     DATE_DEPTH, DATE_BIRTH, DOC_TYPE, DOC_SER, DOC_NUM, DOC_DAT,
+                     DOC_END, DOC_PLACE, DOC_CODE
+                     from OD_FACES
+                     where ID = :ID]
+from %id
+into NAME, INN, TIN, KPP, MNEM, STATE, HOME_ADR, MAIL_ADR, FACT_ADR, HOME_KLADR,
+     MAIL_KLADR, FACT_KLADR, EMAIL, PHONE, FAX, TELEX, REGN, IS_NERES, PROFILE, TAXIS,
+     ENG_NAME, ENG_MAIL_ADR, DATE_DEPTH, DATE_BIRTH, DOC_TYPE, DOC_SER, DOC_NUM,
+     DOC_DAT, DOC_END, DOC_PLACE, DOC_CODE
+do
+    _F_ENVLIGHT->put_s(%lines, %ind, 'NAME', NAME);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'INN', INN);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'TIN', TIN);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'KPP', KPP);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'MNEM', MNEM);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'STATE', STATE);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'HOME_ADR', HOME_ADR);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'MAIL_ADR', MAIL_ADR);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'FACT_ADR', FACT_ADR);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'HOME_KLADR', HOME_KLADR);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'MAIL_KLADR', MAIL_KLADR);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'FACT_KLADR', FACT_KLADR);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'EMAIL', EMAIL);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'PHONE', PHONE);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'FAX', FAX);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'TELEX', TELEX);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'REGN', REGN);
+    _F_ENVLIGHT->put_z(%lines, %ind, 'IS_NERES', IS_NERES);
+    _F_ENVLIGHT->put_z(%lines, %ind, 'PROFILE', PROFILE);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'TAXIS', TAXIS);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'ENG_NAME', ENG_NAME);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'ENG_MAIL_ADR', ENG_MAIL_ADR);
+    _F_ENVLIGHT->put_d(%lines, %ind, 'DATE_DEPTH', DATE_DEPTH);
+    _F_ENVLIGHT->put_d(%lines, %ind, 'DATE_BIRTH', DATE_BIRTH);
+    _F_ENVLIGHT->put_z(%lines, %ind, 'DOC_TYPE', DOC_TYPE);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'DOC_SER', DOC_SER);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'DOC_NUM', DOC_NUM);
+    _F_ENVLIGHT->put_d(%lines, %ind, 'DOC_DAT', DOC_DAT);
+    _F_ENVLIGHT->put_d(%lines, %ind, 'DOC_END', DOC_END);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'DOC_PLACE', DOC_PLACE);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'DOC_CODE', DOC_CODE);
+end

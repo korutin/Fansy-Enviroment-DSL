@@ -1,0 +1,42 @@
+/* -----------------------------------------------------------------------------
+   _F_ENVLIGHT->faces_emit( %lines:LargeInt; %seen:LargeInt; %queue:LargeInt;
+      %efrom:LargeInt; %eto:LargeInt )
+   -----------------------------------------------------------------------------
+   Выгрузить лица очереди в таком порядке, чтобы лицо шло после всех лиц, на
+   которые ссылается (в сценарии env-light ссылка на ещё не объявленный алиас -
+   ошибка). Проходы по очереди повторяются, пока выгружается хотя бы одно лицо;
+   лица из цикла ссылок выгружаются в конце, а их ссылки друг на друга
+   заменяются комментариями (put_f).
+
+   Параметры:
+     %lines         - список строк выгрузки;
+     %seen          - список выгруженных объектов, дополняется;
+     %queue         - очередь лиц (SELF_ID строками);
+     %efrom, %eto   - списки рёбер графа ссылок.
+   ----------------------------------------------------------------------------- */
+var v_progress, v_i, v_n, v_id;
+v_n := ListCount(%queue);
+v_progress := 1;
+while v_progress = 1 do
+    v_progress := 0;
+    v_i := 0;
+    while v_i < v_n do
+        v_id := Int(ListGet(%queue, v_i));
+        if _F_ENVLIGHT->has(%seen, 'F' + Trim(Str(v_id))) = 0 then
+            if _F_ENVLIGHT->deps_ready(%seen, %efrom, %eto, v_id) = 1 then
+                _F_ENVLIGHT->out_face(%lines, %seen, v_id);
+                v_progress := 1;
+            end;
+        end;
+        v_i := v_i + 1;
+    end;
+end;
+/* оставшиеся лица - участники цикла ссылок */
+v_i := 0;
+while v_i < v_n do
+    v_id := Int(ListGet(%queue, v_i));
+    if _F_ENVLIGHT->has(%seen, 'F' + Trim(Str(v_id))) = 0 then
+        _F_ENVLIGHT->out_face(%lines, %seen, v_id);
+    end;
+    v_i := v_i + 1;
+end

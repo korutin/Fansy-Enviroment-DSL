@@ -1,0 +1,26 @@
+/* -----------------------------------------------------------------------------
+   _F_ENVLIGHT->out_share_a( %lines:LargeInt; %ind:Str; %id:Int )
+   -----------------------------------------------------------------------------
+   Поля акции/пая из OD_A_SHARES (права по акциям).
+
+   Параметры: %lines, %ind - как выше; %id - OD_SHARES.ID версии.
+   ----------------------------------------------------------------------------- */
+var VOICECOUNT, MAXSHARE, MAXVOICE, MAXNOMINAL, DIVID_TYPE, DIVID_RATE, DIVID_PERIOD,
+    RIGHTS_SET;
+for 'Данные' select [select VOICECOUNT, MAXSHARE, MAXVOICE, MAXNOMINAL, DIVID_TYPE,
+                     DIVID_RATE, DIVID_PERIOD, RIGHTS_SET
+                     from OD_A_SHARES
+                     where SHARE = :SHARE]
+from %id
+into VOICECOUNT, MAXSHARE, MAXVOICE, MAXNOMINAL, DIVID_TYPE, DIVID_RATE, DIVID_PERIOD,
+     RIGHTS_SET
+do
+    _F_ENVLIGHT->put_n(%lines, %ind, 'VOICECOUNT', VOICECOUNT);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'MAXSHARE', MAXSHARE);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'MAXVOICE', MAXVOICE);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'MAXNOMINAL', MAXNOMINAL);
+    _F_ENVLIGHT->put_z(%lines, %ind, 'DIVID_TYPE', DIVID_TYPE);
+    _F_ENVLIGHT->put_z(%lines, %ind, 'DIVID_RATE', DIVID_RATE);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'DIVID_PERIOD', DIVID_PERIOD);
+    _F_ENVLIGHT->put_z(%lines, %ind, 'RIGHTS_SET', RIGHTS_SET);
+end

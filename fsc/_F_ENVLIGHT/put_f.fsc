@@ -1,0 +1,27 @@
+/* -----------------------------------------------------------------------------
+   _F_ENVLIGHT->put_f( %lines:LargeInt; %ind:Str; %name:Str; %seen:LargeInt;
+      %value )
+   -----------------------------------------------------------------------------
+   Добавить поле-ссылку на лицо <<ИМЯ=&алиас>>. Значение приводится к SELF_ID
+   лица (хранимые ссылки бывают и на ID версии). Если лицо ещё не выгружено выше
+   (цикл ссылок или ссылка на само лицо), вместо поля пишется комментарий.
+
+   Параметры:
+     %lines, %ind, %name - как у put_s;
+     %seen  - дескриптор списка уже выгруженных объектов (ключи F<SELF_ID>);
+     %value - ID лица (OD_FACES.ID или SELF_ID).
+   ----------------------------------------------------------------------------- */
+var v_self, v_id;
+if ~IsBlank(%value) then
+    v_self := _F_ENVLIGHT->ref_self(%value);
+    if IsBlank(v_self) then
+        ListAdd(%lines, %ind + '# ' + %name + ': лицо ID=' + Trim(Str(%value)) + ' не найдено в базе');
+    else
+        v_id := Trim(Str(v_self));
+        if _F_ENVLIGHT->has(%seen, 'F' + v_id) = 1 then
+            ListAdd(%lines, %ind + %name + '=&f' + v_id);
+        else
+            ListAdd(%lines, %ind + '# ' + %name + ': лицо SELF_ID=' + v_id + ' не выгружено выше (цикл ссылок)');
+        end;
+    end;
+end

@@ -1,0 +1,20 @@
+/* -----------------------------------------------------------------------------
+   _F_ENVLIGHT->xwalk_REESTR_SUBTYPE( %code:Int ):Str
+   -----------------------------------------------------------------------------
+   Вид лицевого счёта.
+   Обратное направление: код классификатора -> мнемоника env-light
+   (REESTR_SUBTYPE, cte/mnemonics.py). Неизвестный код возвращается числом как есть.
+
+   Параметры: %code - код (NUM в OD_SYS_TABS).
+   Возврат: мнемоника либо число строкой.
+   ----------------------------------------------------------------------------- */
+var v_res, v_key, LiX;
+v_key := Trim(Str(%code));
+LiX := List('1=owner', '2=nominee', '3=trustee', '4=add_units', '5=pledge',
+            '6=issued_units', '7=fund', '8=unidentified', '9=deposit',
+            '10=issuer_treasury', '102=nominee_cdep');
+v_res := ListVal(LiX, v_key);
+if IsBlank(v_res) then
+    v_res := v_key;
+end;
+v_res

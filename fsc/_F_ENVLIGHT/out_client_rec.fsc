@@ -1,0 +1,47 @@
+/* -----------------------------------------------------------------------------
+   _F_ENVLIGHT->out_client_rec( %lines:LargeInt; %ind:Str; %seen:LargeInt;
+      %client_id:Int )
+   -----------------------------------------------------------------------------
+   Текущая запись реквизитов лицевого счёта из OD_CLIENTS_REC (версия с
+   наибольшей B_DATE), в именах параметров OD_PR_INSERT_CLIENT. Банковский
+   счёт INCOME_ACC пишется ссылкой <<&алиас>> (счёт выгружается раньше).
+
+   Параметры:
+     %lines - список строк выгрузки; %ind - отступ полей;
+     %seen  - список выгруженных объектов;
+     %client_id - OD_CLIENTS.ID.
+   ----------------------------------------------------------------------------- */
+var LINK_NUMBER, INCOME_MOD, INCOME_ACC, INCOME_ADR, INCOME_REC, INCOME_FACE,
+    INCOME_VERBAL, O_MAIL_MOD, O_MAIL_ADR, I_MAIL_MOD, I_MAIL_ALT, I_MAIL_ADR, TARIF,
+    EXTRA_INT, EXTRA_TYPE, IS_NZ, Z_DATE;
+for 'Данные' select [select LINK_NUMBER, INCOME_MOD, INCOME_ACC, INCOME_ADR, INCOME_REC,
+                     INCOME_FACE, INCOME_VERBAL, O_MAIL_MOD, O_MAIL_ADR, I_MAIL_MOD,
+                     I_MAIL_ALT, I_MAIL_ADR, TARIF, EXTRA_INT, EXTRA_TYPE, IS_NZ,
+                     Z_DATE
+                     from OD_CLIENTS_REC
+                     where CLIENT = :CLIENT
+                           and B_DATE = (select max(R.B_DATE) from OD_CLIENTS_REC R
+                                         where R.CLIENT = :R_CLIENT)]
+from %client_id, %client_id
+into LINK_NUMBER, INCOME_MOD, INCOME_ACC, INCOME_ADR, INCOME_REC, INCOME_FACE,
+     INCOME_VERBAL, O_MAIL_MOD, O_MAIL_ADR, I_MAIL_MOD, I_MAIL_ALT, I_MAIL_ADR, TARIF,
+     EXTRA_INT, EXTRA_TYPE, IS_NZ, Z_DATE
+do
+    _F_ENVLIGHT->put_s(%lines, %ind, 'LINK_NUMBER', LINK_NUMBER);
+    _F_ENVLIGHT->put_z(%lines, %ind, 'INCOME_MOD', INCOME_MOD);
+    _F_ENVLIGHT->put_a(%lines, %ind, 'INCOME_ACC', %seen, INCOME_ACC);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'INCOME_ADR', INCOME_ADR);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'INCOME_REC', INCOME_REC);
+    _F_ENVLIGHT->put_f(%lines, %ind, 'INCOME_FACE', %seen, INCOME_FACE);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'INCOME_VERBAL', INCOME_VERBAL);
+    _F_ENVLIGHT->put_z(%lines, %ind, 'O_MAIL_MOD', O_MAIL_MOD);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'O_MAIL_ADR', O_MAIL_ADR);
+    _F_ENVLIGHT->put_z(%lines, %ind, 'I_MAIL_MOD', I_MAIL_MOD);
+    _F_ENVLIGHT->put_z(%lines, %ind, 'I_MAIL_ALT', I_MAIL_ALT);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'I_MAIL_ADR', I_MAIL_ADR);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'TARIF', TARIF);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'EXTRA_INT', EXTRA_INT);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'EXTRA_TYPE', EXTRA_TYPE);
+    _F_ENVLIGHT->put_z(%lines, %ind, 'IS_NZ', IS_NZ);
+    _F_ENVLIGHT->put_d(%lines, %ind, 'Z_DATE', Z_DATE);
+end

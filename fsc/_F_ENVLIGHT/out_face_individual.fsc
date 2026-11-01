@@ -1,0 +1,30 @@
+/* -----------------------------------------------------------------------------
+   _F_ENVLIGHT->out_face_individual( %lines:LargeInt; %ind:Str; %id:Int )
+   -----------------------------------------------------------------------------
+   Поля версии физлица из OD_F_FACES, в именах полей API_UPD_FACE.
+   Не выводится путь к фотографии (PHOTOFILE).
+
+   Параметры:
+     %lines - список строк выгрузки; %ind - отступ полей;
+     %id    - OD_FACES.ID версии лица (OD_F_FACES.FACE).
+   ----------------------------------------------------------------------------- */
+var SEX, PHONE_WORK, PENSNUM, ID_ERN, BIRTHPLACE, FIRSTNAME, PATRONYMIC, LASTNAME,
+    PUBMODE;
+for 'Данные' select [select SEX, PHONE_WORK, PENSNUM, ID_ERN, BIRTHPLACE, FIRSTNAME,
+                     PATRONYMIC, LASTNAME, PUBMODE
+                     from OD_F_FACES
+                     where FACE = :FACE]
+from %id
+into SEX, PHONE_WORK, PENSNUM, ID_ERN, BIRTHPLACE, FIRSTNAME, PATRONYMIC, LASTNAME,
+     PUBMODE
+do
+    _F_ENVLIGHT->put_s(%lines, %ind, 'SEX', SEX);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'PHONE_WORK', PHONE_WORK);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'PENSNUM', PENSNUM);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'ID_ERN', ID_ERN);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'BIRTHPLACE', BIRTHPLACE);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'FIRSTNAME', FIRSTNAME);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'PATRONYMIC', PATRONYMIC);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'LASTNAME', LASTNAME);
+    _F_ENVLIGHT->put_z(%lines, %ind, 'PUBMODE', PUBMODE);
+end

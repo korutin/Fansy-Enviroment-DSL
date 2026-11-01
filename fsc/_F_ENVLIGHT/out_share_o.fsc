@@ -1,0 +1,55 @@
+/* -----------------------------------------------------------------------------
+   _F_ENVLIGHT->out_share_o( %lines:LargeInt; %ind:Str; %seen:LargeInt; %id:Int )
+   -----------------------------------------------------------------------------
+   Поля облигации/банковского сертификата из OD_O_SHARES. GUARANTOR и
+   IMMO_COVER - ссылки на лица (<<&алиас>>).
+
+   Параметры: %lines, %ind, %seen - как выше; %id - OD_SHARES.ID версии.
+   ----------------------------------------------------------------------------- */
+var IS_SAVE, IS_CONV, PERIOD, DAYS, PERCENT_, PRICE, STAVKA, PERIOD_M, IS_GG, NKD_MFU,
+    P_MODEL, IS_EUR_BOND, IS_CLEAR, IS_JUNIOR, IS_SERT, NKD_RT, GUARANTOR, IMMO_COVER,
+    DOC_DAT, DOC_NUM, D_NOMIN, D_OWNER, DEBTOR, MORTGAGER, SN_IS_OFFER, SN_A_CLASS,
+    SN_CP_PRC, SN_MIN_DX_PRC, SN_MAX_DX_PRC;
+for 'Данные' select [select IS_SAVE, IS_CONV, PERIOD, DAYS, PERCENT_, PRICE, STAVKA,
+                     PERIOD_M, IS_GG, NKD_MFU, P_MODEL, IS_EUR_BOND, IS_CLEAR,
+                     IS_JUNIOR, IS_SERT, NKD_RT, GUARANTOR, IMMO_COVER, DOC_DAT,
+                     DOC_NUM, D_NOMIN, D_OWNER, DEBTOR, MORTGAGER, SN_IS_OFFER,
+                     SN_A_CLASS, SN_CP_PRC, SN_MIN_DX_PRC, SN_MAX_DX_PRC
+                     from OD_O_SHARES
+                     where SHARE = :SHARE]
+from %id
+into IS_SAVE, IS_CONV, PERIOD, DAYS, PERCENT_, PRICE, STAVKA, PERIOD_M, IS_GG, NKD_MFU,
+     P_MODEL, IS_EUR_BOND, IS_CLEAR, IS_JUNIOR, IS_SERT, NKD_RT, GUARANTOR, IMMO_COVER,
+     DOC_DAT, DOC_NUM, D_NOMIN, D_OWNER, DEBTOR, MORTGAGER, SN_IS_OFFER, SN_A_CLASS,
+     SN_CP_PRC, SN_MIN_DX_PRC, SN_MAX_DX_PRC
+do
+    _F_ENVLIGHT->put_n(%lines, %ind, 'IS_SAVE', IS_SAVE);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'IS_CONV', IS_CONV);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'PERIOD', PERIOD);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'DAYS', DAYS);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'PERCENT_', PERCENT_);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'PRICE', PRICE);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'STAVKA', STAVKA);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'PERIOD_M', PERIOD_M);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'IS_GG', IS_GG);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'NKD_MFU', NKD_MFU);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'P_MODEL', P_MODEL);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'IS_EUR_BOND', IS_EUR_BOND);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'IS_CLEAR', IS_CLEAR);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'IS_JUNIOR', IS_JUNIOR);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'IS_SERT', IS_SERT);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'NKD_RT', NKD_RT);
+    _F_ENVLIGHT->put_f(%lines, %ind, 'GUARANTOR', %seen, GUARANTOR);
+    _F_ENVLIGHT->put_f(%lines, %ind, 'IMMO_COVER', %seen, IMMO_COVER);
+    _F_ENVLIGHT->put_d(%lines, %ind, 'DOC_DAT', DOC_DAT);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'DOC_NUM', DOC_NUM);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'D_NOMIN', D_NOMIN);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'D_OWNER', D_OWNER);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'DEBTOR', DEBTOR);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'MORTGAGER', MORTGAGER);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'SN_IS_OFFER', SN_IS_OFFER);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'SN_A_CLASS', SN_A_CLASS);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'SN_CP_PRC', SN_CP_PRC);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'SN_MIN_DX_PRC', SN_MIN_DX_PRC);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'SN_MAX_DX_PRC', SN_MAX_DX_PRC);
+end

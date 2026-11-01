@@ -1,0 +1,56 @@
+/* -----------------------------------------------------------------------------
+   _F_ENVLIGHT->out_face( %lines:LargeInt; %seen:LargeInt; %self_id:Int )
+   -----------------------------------------------------------------------------
+   Выгрузить лицо блоками env-light: "face &f<SELF_ID>: individual|juridical".
+   Каждая версия лица - отдельный блок: первая без as_of, следующие с
+   as_of=ГГГГ-ММ-ДД (дата начала версии). Вложенные блоки (code, activity,
+   attorney) пишутся один раз, под первым блоком. Лицо, которое является
+   банком (есть запись в OD_BANKS), выгружается блоком bank (out_bank).
+   В конце лицо отмечается в %seen ключом F<SELF_ID>.
+
+   Лица, на которые ссылается это лицо, должны быть выгружены раньше -
+   порядок обеспечивает faces_emit.
+
+   Параметры:
+     %lines   - список строк выгрузки;
+     %seen    - список выгруженных объектов, дополняется;
+     %self_id - SELF_ID лица.
+   ----------------------------------------------------------------------------- */
+var ID, B_DATE, S_TYPE, NAME;
+var v_alias, v_sub, v_n, v_ind, v_banks;
+v_alias := 'f' + Trim(Str(%self_id));
+v_ind := '  ';
+v_banks := Extract('Данные', [select count(*) from OD_BANKS where U_FACE = :U_FACE], %self_id);
+if v_banks > 0 then
+    _F_ENVLIGHT->out_bank(%lines, %seen, %self_id);
+else
+    v_n := 0;
+    for 'Данные' select [select ID, B_DATE, S_TYPE, NAME
+                         from OD_FACES
+                         where SELF_ID = :SELF_ID and B_DATE <> E_DATE
+                         order by B_DATE]
+    from %self_id
+    into ID, B_DATE, S_TYPE, NAME
+    do
+        v_n := v_n + 1;
+        v_sub := iif(S_TYPE = 0, 'individual', 'juridical');
+        if v_n = 1 then
+            ListAdd(%lines, '');
+            ListAdd(%lines, '# ' + _F_ENVLIGHT->flat(NAME));
+        end;
+        ListAdd(%lines, 'face &' + v_alias + ': ' + v_sub);
+        if v_n > 1 then
+            ListAdd(%lines, v_ind + 'as_of=' + _F_ENVLIGHT->fmt_iso(B_DATE));
+        end;
+        _F_ENVLIGHT->out_face_common(%lines, v_ind, ID);
+        if S_TYPE = 0 then
+            _F_ENVLIGHT->out_face_individual(%lines, v_ind, ID);
+        else
+            _F_ENVLIGHT->out_face_juridical(%lines, v_ind, %seen, ID);
+        end;
+        if v_n = 1 then
+            _F_ENVLIGHT->out_face_children(%lines, %seen, %self_id);
+        end;
+    end;
+end;
+ListAdd(%seen, 'F' + Trim(Str(%self_id)))

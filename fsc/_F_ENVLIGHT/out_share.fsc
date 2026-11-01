@@ -1,0 +1,61 @@
+/* -----------------------------------------------------------------------------
+   _F_ENVLIGHT->out_share( %lines:LargeInt; %seen:LargeInt; %share_id:Int )
+   -----------------------------------------------------------------------------
+   Выгрузить финансовый инструмент блоками "share &s<ID>: <вид>". Каждая
+   версия (OD_SHARES) - отдельный блок: первая без as_of, следующие с
+   as_of=ГГГГ-ММ-ДД. В первом блоке - SYSNAME и эмитент ISSUER (ссылка на лицо),
+   поля OD_VALUES (MFU, IS_IN) и, для паёв, ID_TYPE фонда. В каждом блоке -
+   NAME, ISIN, CFI на дату версии, поля OD_SHARES и поля таблицы вида
+   инструмента: акции и паи (1, 10) - OD_A_SHARES, облигации и банковские
+   сертификаты (2, 6) - OD_O_SHARES, векселя (3) - OD_V_SHARES, опционы,
+   фьючерсы и депозитарные расписки (4, 5, 7) - OD_T_SHARES.
+   Лица, на которые ссылается инструмент, должны быть выгружены раньше.
+   В конце инструмент отмечается в %seen ключом S<ID>.
+
+   Параметры:
+     %lines    - список строк выгрузки;
+     %seen     - список выгруженных объектов, дополняется;
+     %share_id - SELF_ID инструмента (OD_VALUES.ID).
+   ----------------------------------------------------------------------------- */
+var ID, B_DATE, CLASS, ISSUER, ID_TYPE;
+var v_alias, v_n, v_ind;
+v_alias := 's' + Trim(Str(%share_id));
+v_ind := '  ';
+v_n := 0;
+for 'Данные' select [select ID, B_DATE, CLASS, ISSUER
+                     from OD_SHARES
+                     where SELF_ID = :SELF_ID and B_DATE <> E_DATE
+                     order by B_DATE]
+from %share_id
+into ID, B_DATE, CLASS, ISSUER
+do
+    v_n := v_n + 1;
+    if v_n = 1 then
+        ListAdd(%lines, '');
+        ListAdd(%lines, '# финансовый инструмент SELF_ID=' + Trim(Str(%share_id)));
+    end;
+    ListAdd(%lines, 'share &' + v_alias + ': ' + _F_ENVLIGHT->xwalk_SHARE_CLASS(CLASS));
+    if v_n > 1 then
+        ListAdd(%lines, v_ind + 'as_of=' + _F_ENVLIGHT->fmt_iso(B_DATE));
+    end;
+    if v_n = 1 then
+        _F_ENVLIGHT->out_share_values(%lines, v_ind, %share_id);
+        _F_ENVLIGHT->put_f(%lines, v_ind, 'ISSUER', %seen, ISSUER);
+        if CLASS = 10 then
+            ID_TYPE := Extract('Данные', [select max(ID_TYPE) from OD_FUNDS where U_FACE = :U_FACE], ISSUER);
+            _F_ENVLIGHT->put_n(%lines, v_ind, 'ID_TYPE', ID_TYPE);
+        end;
+    end;
+    _F_ENVLIGHT->out_share_opts(%lines, v_ind, %share_id, B_DATE);
+    _F_ENVLIGHT->out_share_main(%lines, v_ind, %seen, ID);
+    if (CLASS = 1) or (CLASS = 10) then
+        _F_ENVLIGHT->out_share_a(%lines, v_ind, ID);
+    elsif (CLASS = 2) or (CLASS = 6) then
+        _F_ENVLIGHT->out_share_o(%lines, v_ind, %seen, ID);
+    elsif CLASS = 3 then
+        _F_ENVLIGHT->out_share_v(%lines, v_ind, %seen, ID);
+    elsif (CLASS = 4) or (CLASS = 5) or (CLASS = 7) then
+        _F_ENVLIGHT->out_share_t(%lines, v_ind, %seen, ID);
+    end;
+end;
+ListAdd(%seen, 'S' + Trim(Str(%share_id)))

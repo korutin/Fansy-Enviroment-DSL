@@ -1,0 +1,52 @@
+/* -----------------------------------------------------------------------------
+   _F_ENVLIGHT->out_share_main( %lines:LargeInt; %ind:Str; %seen:LargeInt;
+      %id:Int )
+   -----------------------------------------------------------------------------
+   Поля версии финансового инструмента из OD_SHARES, в именах полей
+   API_UPD_SHARE. Вид инструмента (CLASS) и эмитент (ISSUER) пишутся в
+   заголовок блока и поле out_share. Код валюты номинала NOM_VAL выводится
+   числом, только если он не равен базовой валюте базы. Не выводится LINK.
+
+   Параметры:
+     %lines - список строк выгрузки; %ind - отступ полей;
+     %seen  - список выгруженных объектов;
+     %id    - OD_SHARES.ID версии.
+   ----------------------------------------------------------------------------- */
+var MNEM, BIRTHDATE, DEATHDATE, DATE_REG, MODE, NOMINAL, COUNT_, ISNUM, NUM_REG,
+    NOM_VAL, ORG_REG, ISSUENUM, TYPE_, STATUS, PMFU, IS_MCS, IS_MARGIN, NOM_TYPE,
+    REP_DATE, BASE_CURR;
+for 'Данные' select [select MNEM, BIRTHDATE, DEATHDATE, DATE_REG, MODE, NOMINAL, COUNT_,
+                     ISNUM, NUM_REG, NOM_VAL, ORG_REG, ISSUENUM, TYPE_, STATUS, PMFU,
+                     IS_MCS, IS_MARGIN, NOM_TYPE, REP_DATE,
+                     (select VALUE_ID from OD_PR_BASE_ID) as BASE_CURR
+                     from OD_SHARES
+                     where ID = :ID]
+from %id
+into MNEM, BIRTHDATE, DEATHDATE, DATE_REG, MODE, NOMINAL, COUNT_, ISNUM, NUM_REG,
+     NOM_VAL, ORG_REG, ISSUENUM, TYPE_, STATUS, PMFU, IS_MCS, IS_MARGIN, NOM_TYPE,
+     REP_DATE, BASE_CURR
+do
+    _F_ENVLIGHT->put_s(%lines, %ind, 'MNEM', MNEM);
+    _F_ENVLIGHT->put_d(%lines, %ind, 'BIRTHDATE', BIRTHDATE);
+    _F_ENVLIGHT->put_d(%lines, %ind, 'DEATHDATE', DEATHDATE);
+    _F_ENVLIGHT->put_d(%lines, %ind, 'DATE_REG', DATE_REG);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'MODE', MODE);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'NOMINAL', NOMINAL);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'COUNT_', COUNT_);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'ISNUM', ISNUM);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'NUM_REG', NUM_REG);
+    if ~IsBlank(NOM_VAL) then
+        if NOM_VAL <> BASE_CURR then
+            _F_ENVLIGHT->put_n(%lines, %ind, 'NOM_VAL', NOM_VAL);
+        end;
+    end;
+    _F_ENVLIGHT->put_f(%lines, %ind, 'ORG_REG', %seen, ORG_REG);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'ISSUENUM', ISSUENUM);
+    _F_ENVLIGHT->put_z(%lines, %ind, 'TYPE_', TYPE_);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'STATUS', STATUS);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'PMFU', PMFU);
+    _F_ENVLIGHT->put_z(%lines, %ind, 'IS_MCS', IS_MCS);
+    _F_ENVLIGHT->put_z(%lines, %ind, 'IS_MARGIN', IS_MARGIN);
+    _F_ENVLIGHT->put_z(%lines, %ind, 'NOM_TYPE', NOM_TYPE);
+    _F_ENVLIGHT->put_d(%lines, %ind, 'REP_DATE', REP_DATE);
+end

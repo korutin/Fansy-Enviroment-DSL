@@ -1,0 +1,19 @@
+/* -----------------------------------------------------------------------------
+   _F_ENVLIGHT->out_share_values( %lines:LargeInt; %ind:Str; %share_id:Int )
+   -----------------------------------------------------------------------------
+   Поля инструмента из OD_VALUES, не зависящие от версии: SYSNAME, MFU, IS_IN.
+   Выводятся один раз, в первом блоке.
+
+   Параметры: %lines, %ind - как выше; %share_id - OD_VALUES.ID (SELF_ID).
+   ----------------------------------------------------------------------------- */
+var SYSNAME, MFU, IS_IN;
+for 'Данные' select [select SYSNAME, MFU, IS_IN
+                     from OD_VALUES
+                     where ID = :ID]
+from %share_id
+into SYSNAME, MFU, IS_IN
+do
+    _F_ENVLIGHT->put_s(%lines, %ind, 'SYSNAME', SYSNAME);
+    _F_ENVLIGHT->put_z(%lines, %ind, 'MFU', MFU);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'IS_IN', IS_IN);
+end

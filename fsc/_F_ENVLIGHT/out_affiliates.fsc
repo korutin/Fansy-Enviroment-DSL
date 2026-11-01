@@ -1,0 +1,58 @@
+/* -----------------------------------------------------------------------------
+   _F_ENVLIGHT->out_affiliates( %lines:LargeInt; %ind:Str; %seen:LargeInt;
+      %client_id:Int )
+   -----------------------------------------------------------------------------
+   Вложенные блоки affiliate лицевого счёта (OD_AFFILS): "affiliate: &f<SELF_ID>"
+   с полем RELATION и остальными полями записи. Банковский счёт INCOME_ACC -
+   ссылка <<&алиас>>. Записи, лицо которых не выгружено, заменяются комментарием.
+   Запись владельца (RELATION = 0), созданная самой вставкой счёта, тоже
+   выгружается; при загрузке она будет найдена, а не создана повторно.
+
+   Параметры:
+     %lines - список строк выгрузки; %ind - отступ блока affiliate;
+     %seen  - список выгруженных объектов;
+     %client_id - OD_CLIENTS.ID.
+   ----------------------------------------------------------------------------- */
+var FACE, RELATION, B_DATE, E_DATE, A_TYPE, A_NUM, A_DATE, A_END, PERCENT_, A_POWER,
+    INCOME_ACC, INCOME_REC, INCOME_ADR, INCOME_VERBAL, NUMERATOR, DENOMINATOR;
+var v_ind2, v_self, v_id, v_ok;
+v_ind2 := %ind + '  ';
+for 'Данные' select [select FACE, RELATION, B_DATE, E_DATE, A_TYPE, A_NUM, A_DATE, A_END,
+                     PERCENT_, POWER, INCOME_ACC, INCOME_REC, INCOME_ADR,
+                     INCOME_VERBAL, NUMERATOR, DENOMINATOR
+                     from OD_AFFILS
+                     where CLIENT = :CLIENT
+                     order by ID]
+from %client_id
+into FACE, RELATION, B_DATE, E_DATE, A_TYPE, A_NUM, A_DATE, A_END, PERCENT_, A_POWER,
+     INCOME_ACC, INCOME_REC, INCOME_ADR, INCOME_VERBAL, NUMERATOR, DENOMINATOR
+do
+    v_ok := 0;
+    v_self := _F_ENVLIGHT->ref_self(FACE);
+    if ~IsBlank(v_self) then
+        v_id := Trim(Str(v_self));
+        if _F_ENVLIGHT->has(%seen, 'F' + v_id) = 1 then
+            v_ok := 1;
+        end;
+    end;
+    if v_ok = 1 then
+        ListAdd(%lines, %ind + 'affiliate: &f' + v_id);
+        _F_ENVLIGHT->put_n(%lines, v_ind2, 'RELATION', RELATION);
+        _F_ENVLIGHT->put_d(%lines, v_ind2, 'B_DATE', B_DATE);
+        _F_ENVLIGHT->put_d(%lines, v_ind2, 'E_DATE', E_DATE);
+        _F_ENVLIGHT->put_n(%lines, v_ind2, 'A_TYPE', A_TYPE);
+        _F_ENVLIGHT->put_s(%lines, v_ind2, 'A_NUM', A_NUM);
+        _F_ENVLIGHT->put_d(%lines, v_ind2, 'A_DATE', A_DATE);
+        _F_ENVLIGHT->put_d(%lines, v_ind2, 'A_END', A_END);
+        _F_ENVLIGHT->put_z(%lines, v_ind2, 'PERCENT_', PERCENT_);
+        _F_ENVLIGHT->put_n(%lines, v_ind2, 'POWER', A_POWER);
+        _F_ENVLIGHT->put_a(%lines, v_ind2, 'INCOME_ACC', %seen, INCOME_ACC);
+        _F_ENVLIGHT->put_s(%lines, v_ind2, 'INCOME_REC', INCOME_REC);
+        _F_ENVLIGHT->put_s(%lines, v_ind2, 'INCOME_ADR', INCOME_ADR);
+        _F_ENVLIGHT->put_s(%lines, v_ind2, 'INCOME_VERBAL', INCOME_VERBAL);
+        _F_ENVLIGHT->put_n(%lines, v_ind2, 'NUMERATOR', NUMERATOR);
+        _F_ENVLIGHT->put_n(%lines, v_ind2, 'DENOMINATOR', DENOMINATOR);
+    else
+        ListAdd(%lines, %ind + '# affiliate: лицо FACE=' + Trim(Str(FACE)) + ' не выгружено');
+    end;
+end

@@ -1,0 +1,41 @@
+/* -----------------------------------------------------------------------------
+   _F_ENVLIGHT->face_refs_add( %queue:LargeInt; %efrom:LargeInt; %eto:LargeInt;
+      %id:Int )
+   -----------------------------------------------------------------------------
+   Найти лица, на которые ссылается лицо, записать рёбра графа ссылок и
+   добавить новые лица в очередь обхода.
+
+   Ссылки лица (по всем его версиям): поля юрлица EXEC_ORGAN, NAL_ORGAN,
+   DEPOT, REESTR (OD_U_FACES); кодировщики кодов (OD_FACE_CODERS);
+   уполномоченные (OD_A_FACES, IS_A = 1). Лица, ссылающиеся на данное, не берутся.
+
+   Параметры:
+     %queue - очередь лиц (SELF_ID строками), дополняется;
+     %efrom, %eto - параллельные списки рёбер <<из>> и <<в>> (SELF_ID строками);
+     %id    - SELF_ID лица, ссылки которого собираются.
+   ----------------------------------------------------------------------------- */
+var R_ID;
+for 'Данные' select [select RF.SELF_ID
+                     from OD_FACES F
+                          join OD_U_FACES U on U.FACE = F.ID
+                          join OD_FACES RF on RF.ID in (U.EXEC_ORGAN, U.NAL_ORGAN, U.DEPOT, U.REESTR)
+                     where F.SELF_ID = :SELF_ID
+                     union
+                     select RF.SELF_ID
+                     from OD_FACE_CODERS C
+                          join OD_FACES RF on RF.ID = C.CODER
+                     where C.FACE = :C_FACE
+                     union
+                     select RF.SELF_ID
+                     from OD_A_FACES A
+                          join OD_FACES RF on RF.ID = A.WORKER
+                     where A.FACE = :A_FACE and A.IS_A = 1]
+from %id, %id, %id
+into R_ID
+do
+    if R_ID <> %id then
+        ListAdd(%efrom, Trim(Str(%id)));
+        ListAdd(%eto, Trim(Str(R_ID)));
+        _F_ENVLIGHT->add_uniq(%queue, R_ID);
+    end;
+end

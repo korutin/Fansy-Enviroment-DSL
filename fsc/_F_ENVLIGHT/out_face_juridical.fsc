@@ -1,0 +1,63 @@
+/* -----------------------------------------------------------------------------
+   _F_ENVLIGHT->out_face_juridical( %lines:LargeInt; %ind:Str; %seen:LargeInt;
+      %id:Int )
+   -----------------------------------------------------------------------------
+   Поля версии юрлица из OD_U_FACES, в именах полей API_UPD_FACE.
+   Поля EXEC_ORGAN, NAL_ORGAN, DEPOT, REESTR - ссылки на лица, пишутся как
+   <<ИМЯ=&алиас>> (лица к этому моменту уже выгружены).
+
+   Параметры:
+     %lines - список строк выгрузки; %ind - отступ полей;
+     %seen  - список выгруженных объектов;
+     %id    - OD_FACES.ID версии лица (OD_U_FACES.FACE).
+   ----------------------------------------------------------------------------- */
+var FULL_NAME, ENG_FULL_NAME, OPF, OKPO, OKONX, OGRN, OGRN_DATE, OGRN_PLACE, OKOGU,
+    OKATO, FS, CAPITAL, ENSURNUM, DEP_NUM, DEP_DAT, DEPOT, REESTR, EXEC_ORGAN,
+    NAL_ORGAN, DOL_1, FIO_1, TEL_1, OSN_1, DOL_2, FIO_2, TEL_2, OSN_2, DOL_OTV,
+    FIO_OTV, TEL_OTV, FIO_BUG, TEL_BUG;
+for 'Данные' select [select FULL_NAME, ENG_FULL_NAME, OPF, OKPO, OKONX, OGRN, OGRN_DATE,
+                     OGRN_PLACE, OKOGU, OKATO, FS, CAPITAL, ENSURNUM, DEP_NUM,
+                     DEP_DAT, DEPOT, REESTR, EXEC_ORGAN, NAL_ORGAN, DOL_1, FIO_1,
+                     TEL_1, OSN_1, DOL_2, FIO_2, TEL_2, OSN_2, DOL_OTV, FIO_OTV,
+                     TEL_OTV, FIO_BUG, TEL_BUG
+                     from OD_U_FACES
+                     where FACE = :FACE]
+from %id
+into FULL_NAME, ENG_FULL_NAME, OPF, OKPO, OKONX, OGRN, OGRN_DATE, OGRN_PLACE, OKOGU,
+     OKATO, FS, CAPITAL, ENSURNUM, DEP_NUM, DEP_DAT, DEPOT, REESTR, EXEC_ORGAN,
+     NAL_ORGAN, DOL_1, FIO_1, TEL_1, OSN_1, DOL_2, FIO_2, TEL_2, OSN_2, DOL_OTV,
+     FIO_OTV, TEL_OTV, FIO_BUG, TEL_BUG
+do
+    _F_ENVLIGHT->put_s(%lines, %ind, 'FULL_NAME', FULL_NAME);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'ENG_FULL_NAME', ENG_FULL_NAME);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'OPF', OPF);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'OKPO', OKPO);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'OKONX', OKONX);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'OGRN', OGRN);
+    _F_ENVLIGHT->put_d(%lines, %ind, 'OGRN_DATE', OGRN_DATE);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'OGRN_PLACE', OGRN_PLACE);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'OKOGU', OKOGU);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'OKATO', OKATO);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'FS', FS);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'CAPITAL', CAPITAL);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'ENSURNUM', ENSURNUM);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'DEP_NUM', DEP_NUM);
+    _F_ENVLIGHT->put_d(%lines, %ind, 'DEP_DAT', DEP_DAT);
+    _F_ENVLIGHT->put_f(%lines, %ind, 'DEPOT', %seen, DEPOT);
+    _F_ENVLIGHT->put_f(%lines, %ind, 'REESTR', %seen, REESTR);
+    _F_ENVLIGHT->put_f(%lines, %ind, 'EXEC_ORGAN', %seen, EXEC_ORGAN);
+    _F_ENVLIGHT->put_f(%lines, %ind, 'NAL_ORGAN', %seen, NAL_ORGAN);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'DOL_1', DOL_1);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'FIO_1', FIO_1);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'TEL_1', TEL_1);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'OSN_1', OSN_1);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'DOL_2', DOL_2);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'FIO_2', FIO_2);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'TEL_2', TEL_2);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'OSN_2', OSN_2);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'DOL_OTV', DOL_OTV);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'FIO_OTV', FIO_OTV);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'TEL_OTV', TEL_OTV);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'FIO_BUG', FIO_BUG);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'TEL_BUG', TEL_BUG);
+end

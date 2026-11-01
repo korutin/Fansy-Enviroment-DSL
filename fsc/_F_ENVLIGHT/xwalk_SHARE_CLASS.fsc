@@ -1,0 +1,21 @@
+/* -----------------------------------------------------------------------------
+   _F_ENVLIGHT->xwalk_SHARE_CLASS( %code:Int ):Str
+   -----------------------------------------------------------------------------
+   Вид финансового инструмента.
+   Обратное направление: код классификатора -> мнемоника env-light
+   (SHARE_CLASS, cte/mnemonics.py). Неизвестный код возвращается числом как есть.
+
+   Параметры: %code - код (NUM в OD_SYS_TABS).
+   Возврат: мнемоника либо число строкой.
+   ----------------------------------------------------------------------------- */
+var v_res, v_key, LiX;
+v_key := Trim(Str(%code));
+LiX := List('1=stock', '2=bond', '3=bill', '4=option', '5=future', '6=bank_cert',
+            '7=dr', '8=bill_of_lading', '9=warrant', '10=unit', '11=ooo_capital',
+            '12=mortgage_cert', '13=mortgage_part', '14=clearing_cert',
+            '15=digital_asset', '16=digital_cert', '17=crypto');
+v_res := ListVal(LiX, v_key);
+if IsBlank(v_res) then
+    v_res := v_key;
+end;
+v_res

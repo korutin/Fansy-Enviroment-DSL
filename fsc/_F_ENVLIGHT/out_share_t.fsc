@@ -1,0 +1,43 @@
+/* -----------------------------------------------------------------------------
+   _F_ENVLIGHT->out_share_t( %lines:LargeInt; %ind:Str; %seen:LargeInt; %id:Int )
+   -----------------------------------------------------------------------------
+   Поля производного инструмента (опцион, фьючерс, депозитарная расписка)
+   из OD_T_SHARES. BANK - ссылка на лицо (<<&алиас>>). Коды валют VALUTA и
+   STEP_VAL выводятся числом, только если не равны базовой валюте базы.
+
+   Параметры: %lines, %ind, %seen - как выше; %id - OD_SHARES.ID версии.
+   ----------------------------------------------------------------------------- */
+var AMOUNT, PRICE, VALUTA, IS_VARGIN, IS_CLEAR, BANK, STEP_VAL, STEP_MIN, STEP_PRICE,
+    STRIKE1, STRIKE2, KU, KZK, STYLE, BASE_CURR;
+for 'Данные' select [select AMOUNT, PRICE, VALUTA, IS_VARGIN, IS_CLEAR, BANK, STEP_VAL,
+                     STEP_MIN, STEP_PRICE, STRIKE1, STRIKE2, KU, KZK, STYLE,
+                     (select VALUE_ID from OD_PR_BASE_ID) as BASE_CURR
+                     from OD_T_SHARES
+                     where SHARE = :SHARE]
+from %id
+into AMOUNT, PRICE, VALUTA, IS_VARGIN, IS_CLEAR, BANK, STEP_VAL, STEP_MIN, STEP_PRICE,
+     STRIKE1, STRIKE2, KU, KZK, STYLE, BASE_CURR
+do
+    _F_ENVLIGHT->put_n(%lines, %ind, 'AMOUNT', AMOUNT);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'PRICE', PRICE);
+    if ~IsBlank(VALUTA) then
+        if VALUTA <> BASE_CURR then
+            _F_ENVLIGHT->put_n(%lines, %ind, 'VALUTA', VALUTA);
+        end;
+    end;
+    _F_ENVLIGHT->put_z(%lines, %ind, 'IS_VARGIN', IS_VARGIN);
+    _F_ENVLIGHT->put_z(%lines, %ind, 'IS_CLEAR', IS_CLEAR);
+    _F_ENVLIGHT->put_f(%lines, %ind, 'BANK', %seen, BANK);
+    if ~IsBlank(STEP_VAL) then
+        if STEP_VAL <> BASE_CURR then
+            _F_ENVLIGHT->put_n(%lines, %ind, 'STEP_VAL', STEP_VAL);
+        end;
+    end;
+    _F_ENVLIGHT->put_n(%lines, %ind, 'STEP_MIN', STEP_MIN);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'STEP_PRICE', STEP_PRICE);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'STRIKE1', STRIKE1);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'STRIKE2', STRIKE2);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'KU', KU);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'KZK', KZK);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'STYLE', STYLE);
+end

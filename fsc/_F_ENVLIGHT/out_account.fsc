@@ -1,0 +1,76 @@
+/* -----------------------------------------------------------------------------
+   _F_ENVLIGHT->out_account( %lines:LargeInt; %seen:LargeInt; %acc_id:Int )
+   -----------------------------------------------------------------------------
+   Выгрузить банковский счёт блоком "bank_account &a<ID>". Банк указывается
+   через поле BIC: БИК из OD_BANKS, а если его нет - SWIFT, затем мнемоника
+   лица-банка (так банк находит API_FIND_ACC). Владелец FACE и площадка MARKET -
+   ссылки на лица. Код валюты ACC_VAL выводится числом, только если он не
+   равен базовой валюте базы (число действует лишь в этой базе).
+   Не выводятся: LINK (другой счёт), PLACE (цепочка), служебные поля.
+   В конце счёт отмечается в %seen ключом A<ID>.
+
+   Параметры:
+     %lines  - список строк выгрузки;
+     %seen   - список выгруженных объектов, дополняется;
+     %acc_id - OD_FACE_ACCS.ID.
+   ----------------------------------------------------------------------------- */
+var FACE, BANK, ACNT, A_TYPE, S_TYPE, IS_MAIN, IS_POP, NAME, O_NUM, O_DATE, A_DATE,
+    C_DATE, ACC_VAL, MARKET, DEPARTMENT, DEPART_CITY, ACNT_CORR, BASE_CURR;
+var v_ind, v_bank, v_bic;
+v_ind := '  ';
+for 'Данные' select [select FACE, BANK, ACNT, A_TYPE, S_TYPE, IS_MAIN, IS_POP, NAME, O_NUM,
+                            O_DATE, A_DATE, C_DATE, ACC_VAL, MARKET, DEPARTMENT, DEPART_CITY,
+                            ACNT_CORR, (select VALUE_ID from OD_PR_BASE_ID) as BASE_CURR
+                     from OD_FACE_ACCS
+                     where ID = :ID]
+from %acc_id
+into FACE, BANK, ACNT, A_TYPE, S_TYPE, IS_MAIN, IS_POP, NAME, O_NUM,
+     O_DATE, A_DATE, C_DATE, ACC_VAL, MARKET, DEPARTMENT, DEPART_CITY,
+     ACNT_CORR, BASE_CURR
+do
+    v_bic := clear('');
+    v_bank := _F_ENVLIGHT->ref_self(BANK);
+    if ~IsBlank(v_bank) then
+        v_bic := Extract('Данные',
+                         [select max(BIC) from OD_BANKS
+                          where U_FACE = :U_FACE], v_bank);
+        if IsBlank(v_bic) then
+            v_bic := Extract('Данные',
+                             [select max(SWIFT) from OD_BANKS
+                              where U_FACE = :U_FACE], v_bank);
+        end;
+        if IsBlank(v_bic) then
+            v_bic := Extract('Данные',
+                             [select max(MNEM) from OD_FACES
+                              where SELF_ID = :SELF_ID and LAST_FLAG = 1], v_bank);
+        end;
+    end;
+    ListAdd(%lines, '');
+    ListAdd(%lines, '# счёт ' + _F_ENVLIGHT->flat(ACNT));
+    if IsBlank(v_bic) then
+        ListAdd(%lines, '# банк счёта не определён (нет BIC, SWIFT и мнемоники): блок не загрузится');
+    end;
+    ListAdd(%lines, 'bank_account &a' + Trim(Str(%acc_id)));
+    _F_ENVLIGHT->put_s(%lines, v_ind, 'ACNT', ACNT);
+    _F_ENVLIGHT->put_s(%lines, v_ind, 'BIC', v_bic);
+    _F_ENVLIGHT->put_f(%lines, v_ind, 'FACE', %seen, FACE);
+    _F_ENVLIGHT->put_z(%lines, v_ind, 'A_TYPE', A_TYPE);
+    _F_ENVLIGHT->put_n(%lines, v_ind, 'S_TYPE', S_TYPE);
+    _F_ENVLIGHT->put_z(%lines, v_ind, 'IS_MAIN', IS_MAIN);
+    _F_ENVLIGHT->put_z(%lines, v_ind, 'IS_POP', IS_POP);
+    _F_ENVLIGHT->put_s(%lines, v_ind, 'NAME', NAME);
+    _F_ENVLIGHT->put_s(%lines, v_ind, 'O_NUM', O_NUM);
+    _F_ENVLIGHT->put_d(%lines, v_ind, 'O_DATE', O_DATE);
+    _F_ENVLIGHT->put_d(%lines, v_ind, 'A_DATE', A_DATE);
+    _F_ENVLIGHT->put_d(%lines, v_ind, 'C_DATE', C_DATE);
+    if ~IsBlank(ACC_VAL) then
+        if ACC_VAL <> BASE_CURR then
+            _F_ENVLIGHT->put_n(%lines, v_ind, 'ACC_VAL', ACC_VAL);
+        end;
+    end;
+    _F_ENVLIGHT->put_f(%lines, v_ind, 'MARKET', %seen, MARKET);
+    _F_ENVLIGHT->put_s(%lines, v_ind, 'DEPARTMENT', DEPARTMENT);
+    _F_ENVLIGHT->put_s(%lines, v_ind, 'DEPART_CITY', DEPART_CITY);
+    _F_ENVLIGHT->put_s(%lines, v_ind, 'ACNT_CORR', ACNT_CORR);
+end;
+ListAdd(%seen, 'A' + Trim(Str(%acc_id)))

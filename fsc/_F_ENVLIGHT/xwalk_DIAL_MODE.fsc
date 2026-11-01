@@ -1,0 +1,22 @@
+/* -----------------------------------------------------------------------------
+   _F_ENVLIGHT->xwalk_DIAL_MODE( %code:Int ):Str
+   -----------------------------------------------------------------------------
+   Вид деятельности.
+   Обратное направление: код классификатора -> мнемоника env-light
+   (DIAL_MODE, cte/mnemonics.py). Неизвестный код возвращается числом как есть.
+
+   Параметры: %code - код (NUM в OD_SYS_TABS).
+   Возврат: мнемоника либо число строкой.
+   ----------------------------------------------------------------------------- */
+var v_res, v_key, LiX;
+v_key := Trim(Str(%code));
+LiX := List('0=registrar', '1=broker', '2=dealer', '3=fund_manager', '4=trust',
+            '5=depositary', '6=clearing', '7=exchange', '8=spec_depositary',
+            '9=spec_registrar', '12=transfer_agent', '13=uk_agent', '14=bank',
+            '18=insurance', '19=pif', '20=npf', '21=investment_fund', '34=advisor',
+            '38=foreign_info_system');
+v_res := ListVal(LiX, v_key);
+if IsBlank(v_res) then
+    v_res := v_key;
+end;
+v_res

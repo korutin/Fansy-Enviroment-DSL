@@ -1,0 +1,43 @@
+/* -----------------------------------------------------------------------------
+   _F_ENVLIGHT->out_client_main( %lines:LargeInt; %ind:Str; %seen:LargeInt;
+      %client_id:Int )
+   -----------------------------------------------------------------------------
+   Основные поля лицевого счёта из OD_CLIENTS, в именах параметров
+   OD_PR_INSERT_CLIENT. Не выводятся: PLAN_ID и OPER (движок берёт их у
+   оператора подключения), PARENT (обрабатывает out_client), PLACE (цепочка),
+   служебные и неподдерживаемые env-light поля.
+
+   Параметры:
+     %lines - список строк выгрузки; %ind - отступ полей;
+     %seen  - список выгруженных объектов;
+     %client_id - OD_CLIENTS.ID.
+   ----------------------------------------------------------------------------- */
+var NUMBER, FACE, ISSUER, TYPE_, RELATION, IS_TERM, IS_MANAGER, IS_VOICE, IS_PRIV,
+    IS_SOV, IS_BCLIENT, STATE, D_OPEN, D_CLOSE, NAME, DD_DATE, DD_NUM;
+for 'Данные' select [select NUMBER, FACE, ISSUER, TYPE_, RELATION, IS_TERM, IS_MANAGER,
+                     IS_VOICE, IS_PRIV, IS_SOV, IS_BCLIENT, STATE, D_OPEN, D_CLOSE,
+                     NAME, DD_DATE, DD_NUM
+                     from OD_CLIENTS
+                     where ID = :ID]
+from %client_id
+into NUMBER, FACE, ISSUER, TYPE_, RELATION, IS_TERM, IS_MANAGER, IS_VOICE, IS_PRIV,
+     IS_SOV, IS_BCLIENT, STATE, D_OPEN, D_CLOSE, NAME, DD_DATE, DD_NUM
+do
+    _F_ENVLIGHT->put_s(%lines, %ind, 'NUMBER', NUMBER);
+    _F_ENVLIGHT->put_f(%lines, %ind, 'FACE', %seen, FACE);
+    _F_ENVLIGHT->put_f(%lines, %ind, 'ISSUER', %seen, ISSUER);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'TYPE_', TYPE_);
+    _F_ENVLIGHT->put_z(%lines, %ind, 'RELATION', RELATION);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'IS_TERM', IS_TERM);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'IS_MANAGER', IS_MANAGER);
+    _F_ENVLIGHT->put_n(%lines, %ind, 'IS_VOICE', IS_VOICE);
+    _F_ENVLIGHT->put_z(%lines, %ind, 'IS_PRIV', IS_PRIV);
+    _F_ENVLIGHT->put_z(%lines, %ind, 'IS_SOV', IS_SOV);
+    _F_ENVLIGHT->put_z(%lines, %ind, 'IS_BCLIENT', IS_BCLIENT);
+    _F_ENVLIGHT->put_z(%lines, %ind, 'STATE', STATE);
+    _F_ENVLIGHT->put_d(%lines, %ind, 'D_OPEN', D_OPEN);
+    _F_ENVLIGHT->put_d(%lines, %ind, 'D_CLOSE', D_CLOSE);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'NAME', NAME);
+    _F_ENVLIGHT->put_d(%lines, %ind, 'DD_DATE', DD_DATE);
+    _F_ENVLIGHT->put_s(%lines, %ind, 'DD_NUM', DD_NUM);
+end
